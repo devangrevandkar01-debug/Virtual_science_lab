@@ -96,23 +96,73 @@ header h1 {
   font-size: 10px;
   letter-spacing: 3px;
   color: var(--accent-cyan);
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 12px 16px 0;
   text-transform: uppercase;
 }
-.exp-section { padding: 10px 0; }
+
+/* ── TABS ── */
+.panel-tabs {
+  display: flex;
+  padding: 8px 10px 0;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.panel-tab {
+  flex: 1;
+  padding: 7px 4px;
+  text-align: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  user-select: none;
+  white-space: nowrap;
+}
+.panel-tab:hover { color: var(--text-primary); }
+.panel-tab.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); }
+.panel-tab.chem-tab.active { color: var(--accent-amber); border-bottom-color: var(--accent-amber); }
+
+/* ── TAB PANES ── */
+.tab-pane {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+.tab-pane.active { display: flex; }
+
+/* ── EXPERIMENTS PANE ── */
+.exp-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-glow) transparent;
+}
+.exp-section { padding: 6px 0; }
 .exp-section-label {
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 2px;
   color: var(--text-dim);
-  padding: 6px 16px 4px;
+  padding: 4px 14px 3px;
   text-transform: uppercase;
   font-family: 'Share Tech Mono', monospace;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.exp-section-label::after {
+  content:''; flex:1; height:1px; background: var(--border-subtle);
 }
 .exp-item {
-  padding: 9px 16px;
+  padding: 8px 14px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-dim);
   border-left: 2px solid transparent;
@@ -124,27 +174,20 @@ header h1 {
 }
 .exp-item:hover { color: var(--text-primary); background: rgba(0,229,255,0.05); border-left-color: var(--accent-cyan); }
 .exp-item.active { color: var(--accent-cyan); border-left-color: var(--accent-cyan); background: rgba(0,229,255,0.08); }
-.exp-item .exp-icon { font-size: 14px; }
+.exp-item .exp-icon { font-size: 13px; flex-shrink: 0; }
 
-.equipment-tray {
-  border-top: 1px solid var(--border-subtle);
-  padding: 12px 0;
+/* ── EQUIPMENT PANE ── */
+.equip-scroll {
   flex: 1;
   overflow-y: auto;
+  padding: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-glow) transparent;
 }
-.tray-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: var(--text-dim);
-  padding: 4px 16px 8px;
-  text-transform: uppercase;
-}
-.tray-grid {
+.equip-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
-  padding: 0 12px;
 }
 .tray-item {
   background: var(--bg-glass);
@@ -155,48 +198,111 @@ header h1 {
   cursor: grab;
   transition: all 0.2s;
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 .tray-item:hover { border-color: var(--accent-cyan); background: rgba(0,229,255,0.08); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,229,255,0.15); }
-.tray-section-divider {
-  margin: 8px 12px 4px;
-  padding: 5px 6px;
-  border-top: 1px solid var(--border-subtle);
+.tray-item .item-name {
   font-family: 'Share Tech Mono', monospace;
   font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--accent-amber);
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  word-break: break-word;
 }
-.tray-section-divider::after {
-  content: '';
+
+/* ── CHEMICALS PANE ── */
+.chem-scroll {
   flex: 1;
-  height: 1px;
-  background: rgba(255,179,0,0.2);
+  overflow-y: auto;
+  padding: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,179,0,0.2) transparent;
+}
+.chem-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
 }
 .tray-item.chemical {
-  border-color: rgba(255,179,0,0.15);
-  position: relative;
+  border-color: rgba(255,179,0,0.2);
+  background: rgba(255,179,0,0.04);
 }
 .tray-item.chemical:hover {
   border-color: var(--accent-amber);
-  background: rgba(255,179,0,0.08);
-  box-shadow: 0 4px 16px rgba(255,179,0,0.15);
-}
-.tray-item.chemical .item-svg svg {
-  width: 36px;
-  height: auto;
+  background: rgba(255,179,0,0.1);
+  box-shadow: 0 4px 16px rgba(255,179,0,0.18);
+  transform: translateY(-2px);
 }
 .hazard-tag {
   font-size: 8px;
   color: var(--accent-amber);
   font-family: 'Share Tech Mono', monospace;
   letter-spacing: 0.5px;
-  margin-top: 2px;
-  opacity: 0.8;
+  opacity: 0.85;
 }
+.chem-full-name {
+  font-size: 8px;
+  color: var(--text-dim);
+  font-family: 'Share Tech Mono', monospace;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  :root { --panel-w: 220px; }
+}
+@media (max-width: 680px) {
+  :root { --panel-w: 0px; }
+  .left-panel {
+    position: fixed;
+    left: 0; top: 54px; bottom: 0;
+    width: 260px;
+    z-index: 500;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .left-panel.open { transform: translateX(0); }
+  .right-panel {
+    position: fixed;
+    right: 0; top: 54px; bottom: 0;
+    width: 260px;
+    z-index: 500;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+  .right-panel.open { transform: translateX(0); }
+  .mobile-toggle-bar {
+    display: flex !important;
+  }
+}
+
+/* mobile toggle bar */
+.mobile-toggle-bar {
+  display: none;
+  position: fixed;
+  bottom: 170px;
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 8px;
+  z-index: 400;
+}
+.mob-btn {
+  background: rgba(8,22,42,0.95);
+  border: 1px solid var(--border-glow);
+  color: var(--accent-cyan);
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+
 /* Chemical on bench */
 .lab-chem {
   position: absolute;
@@ -835,38 +941,61 @@ header h1 {
 
 <div class="workspace">
   <!-- LEFT PANEL -->
-  <div class="left-panel">
-    <div class="panel-title">Experiments</div>
-    <div class="exp-section">
-      <div class="exp-section-label">⚗ Chemistry</div>
-      <div class="exp-item active" data-exp="acid-base" onclick="loadExperiment('acid-base')">
-        <span class="exp-icon">🧪</span> Acid-Base Reaction
-      </div>
-      <div class="exp-item" data-exp="combustion" onclick="loadExperiment('combustion')">
-        <span class="exp-icon">🔥</span> Combustion Study
-      </div>
-      <div class="exp-item" data-exp="crystallize" onclick="loadExperiment('crystallize')">
-        <span class="exp-icon">💎</span> Crystallization
-      </div>
-      <div class="exp-item" data-exp="titration" onclick="loadExperiment('titration')">
-        <span class="exp-icon">💧</span> Titration
+  <div class="left-panel" id="leftPanel">
+    <div class="panel-title">⚗ Lab Console</div>
+
+    <!-- TABS -->
+    <div class="panel-tabs">
+      <div class="panel-tab active" data-tab="experiments" onclick="switchTab('experiments')">🧬 Expts</div>
+      <div class="panel-tab" data-tab="equipment" onclick="switchTab('equipment')">🔬 Equip</div>
+      <div class="panel-tab chem-tab" data-tab="chemicals" onclick="switchTab('chemicals')">⚗ Chem</div>
+    </div>
+
+    <!-- EXPERIMENTS PANE -->
+    <div class="tab-pane active" id="pane-experiments">
+      <div class="exp-scroll">
+        <div class="exp-section">
+          <div class="exp-section-label">⚗ Chemistry</div>
+          <div class="exp-item active" data-exp="acid-base" onclick="loadExperiment('acid-base')">
+            <span class="exp-icon">🧪</span> Acid-Base Reaction
+          </div>
+          <div class="exp-item" data-exp="combustion" onclick="loadExperiment('combustion')">
+            <span class="exp-icon">🔥</span> Combustion Study
+          </div>
+          <div class="exp-item" data-exp="crystallize" onclick="loadExperiment('crystallize')">
+            <span class="exp-icon">💎</span> Crystallization
+          </div>
+          <div class="exp-item" data-exp="titration" onclick="loadExperiment('titration')">
+            <span class="exp-icon">💧</span> Titration
+          </div>
+        </div>
+        <div class="exp-section">
+          <div class="exp-section-label">⚛ Physics</div>
+          <div class="exp-item" data-exp="optics" onclick="loadExperiment('optics')">
+            <span class="exp-icon">🔆</span> Optics &amp; Prism
+          </div>
+          <div class="exp-item" data-exp="pendulum" onclick="loadExperiment('pendulum')">
+            <span class="exp-icon">⏱</span> Pendulum Motion
+          </div>
+          <div class="exp-item" data-exp="density" onclick="loadExperiment('density')">
+            <span class="exp-icon">📊</span> Density Study
+          </div>
+        </div>
       </div>
     </div>
-    <div class="exp-section">
-      <div class="exp-section-label">⚛ Physics</div>
-      <div class="exp-item" data-exp="optics" onclick="loadExperiment('optics')">
-        <span class="exp-icon">🔆</span> Optics & Prism
-      </div>
-      <div class="exp-item" data-exp="pendulum" onclick="loadExperiment('pendulum')">
-        <span class="exp-icon">⏱</span> Pendulum Motion
-      </div>
-      <div class="exp-item" data-exp="density" onclick="loadExperiment('density')">
-        <span class="exp-icon">📊</span> Density Study
+
+    <!-- EQUIPMENT PANE -->
+    <div class="tab-pane" id="pane-equipment">
+      <div class="equip-scroll">
+        <div class="equip-grid" id="equipGrid"></div>
       </div>
     </div>
-    <div class="equipment-tray">
-      <div class="tray-label">Equipment</div>
-      <div class="tray-grid" id="trayGrid"></div>
+
+    <!-- CHEMICALS PANE -->
+    <div class="tab-pane" id="pane-chemicals">
+      <div class="chem-scroll">
+        <div class="chem-grid" id="chemGrid"></div>
+      </div>
     </div>
   </div>
 
@@ -878,7 +1007,7 @@ header h1 {
   </div>
 
   <!-- RIGHT PANEL -->
-  <div class="right-panel">
+  <div class="right-panel" id="rightPanel">
     <div class="ai-header">
       <div class="ai-avatar">🤖</div>
       <div>
@@ -1118,45 +1247,75 @@ function getItemSVG(def) {
   }
 }
 
-// ── TRAY ──
-const trayGrid = document.getElementById('trayGrid');
+// ── TAB SWITCHING ──
+function switchTab(name) {
+  document.querySelectorAll('.panel-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-pane').forEach(p =>
+    p.classList.toggle('active', p.id === 'pane-' + name));
+}
+
+function togglePanel(side) {
+  if (side === 'left') {
+    document.getElementById('leftPanel').classList.toggle('open');
+    document.getElementById('rightPanel').classList.remove('open');
+  } else {
+    document.getElementById('rightPanel').classList.toggle('open');
+    document.getElementById('leftPanel').classList.remove('open');
+  }
+}
+
+// ── EQUIPMENT TRAY ──
+const equipGrid = document.getElementById('equipGrid');
 equipmentDefs.forEach(def => {
   const div = document.createElement('div');
   div.className = 'tray-item';
-  div.innerHTML = `<div class="item-svg">${getItemSVG(def)}</div><div class="item-name">${def.name.toUpperCase()}</div>`;
+  div.innerHTML = `
+    <div class="item-svg">${getItemSVG(def)}</div>
+    <div class="item-name">${def.name.toUpperCase()}</div>
+  `;
   div.setAttribute('draggable', true);
-  div.addEventListener('dragstart', e => {
-    e.dataTransfer.setData('equipId', def.id);
-  });
-  trayGrid.appendChild(div);
+  div.addEventListener('dragstart', e => e.dataTransfer.setData('equipId', def.id));
+  // Tap-to-spawn on mobile (touch)
+  div.addEventListener('click', () => spawnItemCenter(def));
+  equipGrid.appendChild(div);
 });
 
-// Chemicals divider
-const chemDiv = document.createElement('div');
-chemDiv.className = 'tray-section-divider';
-chemDiv.style.cssText = 'grid-column:1/-1;';
-chemDiv.innerHTML = '⚗ Chemicals';
-trayGrid.appendChild(chemDiv);
-
-// Chemical items
+// ── CHEMICALS TRAY ──
+const chemGrid = document.getElementById('chemGrid');
 chemicalDefs.forEach(chem => {
   const div = document.createElement('div');
   div.className = 'tray-item chemical';
+  const svgSmall = chem.svg.replace('viewBox="0 0 100 200"', 'viewBox="0 0 100 200" width="40" height="80"');
   div.innerHTML = `
-    <div class="item-svg" style="height:52px;display:flex;align-items:center;justify-content:center;">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200" width="38" height="76">${div._svgInner = ''}</svg>
-    </div>
+    <div class="item-svg">${svgSmall}</div>
     <div class="item-name">${chem.name}</div>
+    <div class="chem-full-name">${chem.fullName}</div>
     <div class="hazard-tag">${chem.hazard}</div>
   `;
-  // Use the real inlined SVG
-  div.querySelector('.item-svg').innerHTML = `<div style="width:38px;height:76px;overflow:hidden;">${chem.svg.replace('viewBox="0 0 100 200"', 'viewBox="0 0 100 200" width="38" height="76"')}</div>`;
   div.setAttribute('draggable', true);
-  div.addEventListener('dragstart', e => {
-    e.dataTransfer.setData('chemId', chem.id);
-  });
-  trayGrid.appendChild(div);
+  div.addEventListener('dragstart', e => e.dataTransfer.setData('chemId', chem.id));
+  // Tap-to-spawn on mobile
+  div.addEventListener('click', () => spawnChemCenter(chem));
+  chemGrid.appendChild(div);
 });
+
+// Spawn at center of bench (for tap/click)
+function spawnItemCenter(def) {
+  const labRect = labArea.getBoundingClientRect();
+  const x = labRect.width / 2 - 35 + (Math.random() - 0.5) * 120;
+  const y = labRect.height * 0.35 + (Math.random() - 0.5) * 40;
+  spawnItem(def, x, y);
+  // Auto-close panel on mobile
+  document.getElementById('leftPanel').classList.remove('open');
+}
+function spawnChemCenter(chem) {
+  const labRect = labArea.getBoundingClientRect();
+  const x = labRect.width / 2 - 28 + (Math.random() - 0.5) * 120;
+  const y = labRect.height * 0.32 + (Math.random() - 0.5) * 40;
+  spawnChem(chem, x, y);
+  document.getElementById('leftPanel').classList.remove('open');
+}
 
 // ── LAB AREA DRAG-AND-DROP ──
 const labArea = document.getElementById('labArea');
@@ -2183,5 +2342,10 @@ setInterval(updateClock, 1000);
 updateClock();
 </script>
 
+<!-- MOBILE TOGGLES -->
+<div class="mobile-toggle-bar">
+  <button class="mob-btn" onclick="togglePanel('left')">☰ Panel</button>
+  <button class="mob-btn" onclick="togglePanel('right')">🤖 Tutor</button>
+</div>
 </body>
 </html>
