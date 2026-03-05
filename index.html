@@ -1,0 +1,2187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virtual Science Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #050a0f;
+  --bg-panel: rgba(8, 20, 35, 0.85);
+  --bg-glass: rgba(15, 35, 60, 0.6);
+  --accent-cyan: #00e5ff;
+  --accent-green: #39ff14;
+  --accent-amber: #ffb300;
+  --accent-red: #ff3d3d;
+  --accent-purple: #b24bff;
+  --text-primary: #e0f0ff;
+  --text-dim: #7ca5c7;
+  --border-glow: rgba(0, 229, 255, 0.25);
+  --border-subtle: rgba(0, 229, 255, 0.08);
+  --panel-w: 280px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 54px;
+  background: rgba(5, 15, 28, 0.95);
+  border-bottom: 1px solid var(--border-glow);
+  flex-shrink: 0;
+  z-index: 10;
+}
+header h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 20px rgba(0,229,255,0.6);
+}
+.header-meta {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+  animation: pulse 2s infinite;
+  display: inline-block;
+  margin-right: 6px;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ── MAIN LAYOUT ── */
+.workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── LEFT PANEL ── */
+.left-panel {
+  width: var(--panel-w);
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-glow);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.panel-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--accent-cyan);
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  text-transform: uppercase;
+}
+.exp-section { padding: 10px 0; }
+.exp-section-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  padding: 6px 16px 4px;
+  text-transform: uppercase;
+  font-family: 'Share Tech Mono', monospace;
+}
+.exp-item {
+  padding: 9px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  border-left: 2px solid transparent;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.exp-item:hover { color: var(--text-primary); background: rgba(0,229,255,0.05); border-left-color: var(--accent-cyan); }
+.exp-item.active { color: var(--accent-cyan); border-left-color: var(--accent-cyan); background: rgba(0,229,255,0.08); }
+.exp-item .exp-icon { font-size: 14px; }
+
+.equipment-tray {
+  border-top: 1px solid var(--border-subtle);
+  padding: 12px 0;
+  flex: 1;
+  overflow-y: auto;
+}
+.tray-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  padding: 4px 16px 8px;
+  text-transform: uppercase;
+}
+.tray-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 0 12px;
+}
+.tray-item {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 6px;
+  text-align: center;
+  cursor: grab;
+  transition: all 0.2s;
+  user-select: none;
+}
+.tray-item:hover { border-color: var(--accent-cyan); background: rgba(0,229,255,0.08); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,229,255,0.15); }
+.tray-section-divider {
+  margin: 8px 12px 4px;
+  padding: 5px 6px;
+  border-top: 1px solid var(--border-subtle);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--accent-amber);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tray-section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,179,0,0.2);
+}
+.tray-item.chemical {
+  border-color: rgba(255,179,0,0.15);
+  position: relative;
+}
+.tray-item.chemical:hover {
+  border-color: var(--accent-amber);
+  background: rgba(255,179,0,0.08);
+  box-shadow: 0 4px 16px rgba(255,179,0,0.15);
+}
+.tray-item.chemical .item-svg svg {
+  width: 36px;
+  height: auto;
+}
+.hazard-tag {
+  font-size: 8px;
+  color: var(--accent-amber);
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+  opacity: 0.8;
+}
+/* Chemical on bench */
+.lab-chem {
+  position: absolute;
+  cursor: grab;
+  user-select: none;
+  z-index: 5;
+  transition: filter 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.lab-chem:active { cursor: grabbing; z-index: 100; }
+.lab-chem svg { transition: filter 0.3s, transform 0.2s; filter: drop-shadow(0 4px 14px rgba(0,0,0,0.7)); }
+.lab-chem:hover svg { transform: translateY(-4px) scale(1.05); filter: drop-shadow(0 0 18px rgba(255,179,0,0.5)) drop-shadow(0 4px 14px rgba(0,0,0,0.7)); }
+.lab-chem.reacting svg { animation: reactShake 0.4s ease-in-out; }
+.chem-bench-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--accent-amber);
+  letter-spacing: 1px;
+  margin-top: 2px;
+  text-shadow: 0 0 6px rgba(255,179,0,0.5);
+}
+.tray-item .item-svg { font-size: 28px; margin-bottom: 4px; }
+.tray-item .item-name { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; font-family: 'Share Tech Mono', monospace; }
+
+/* ── LAB BENCH ── */
+.lab-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.04) 0%, transparent 60%),
+    linear-gradient(180deg, #050d18 0%, #080f1c 40%, #0c1a2e 70%, #111a28 100%);
+}
+
+/* Grid lines on bench */
+.lab-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* Bench surface */
+.bench-surface {
+  position: absolute;
+  bottom: 160px;
+  left: 0; right: 0;
+  height: 18px;
+  background: linear-gradient(180deg, #1e3a5f 0%, #142840 50%, #0d1f33 100%);
+  border-top: 2px solid rgba(0,229,255,0.3);
+  box-shadow: 0 0 30px rgba(0,229,255,0.1), 0 4px 20px rgba(0,0,0,0.5);
+}
+.bench-surface::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+  animation: benchGlow 4s ease-in-out infinite;
+}
+@keyframes benchGlow { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+.bench-front {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  height: 160px;
+  background: linear-gradient(180deg, #0d1f33 0%, #08131f 60%, #050d17 100%);
+  border-top: 1px solid rgba(0,229,255,0.1);
+}
+
+/* ── DRAGGABLE ITEMS ── */
+.lab-item {
+  position: absolute;
+  cursor: grab;
+  user-select: none;
+  z-index: 5;
+  transition: filter 0.2s;
+}
+.lab-item:active { cursor: grabbing; z-index: 100; }
+.lab-item svg { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6)); transition: filter 0.3s, transform 0.2s; }
+.lab-item:hover svg { filter: drop-shadow(0 0 16px rgba(0,229,255,0.5)) drop-shadow(0 4px 12px rgba(0,0,0,0.6)); transform: translateY(-3px); }
+.lab-item.reacting svg { animation: reactShake 0.3s ease-in-out; }
+@keyframes reactShake { 0%,100%{transform:translateY(-3px)} 25%{transform:translateY(-3px) rotate(-3deg)} 75%{transform:translateY(-3px) rotate(3deg)} }
+
+/* ── TOOLTIP ── */
+.tooltip {
+  position: fixed;
+  background: rgba(8, 25, 45, 0.95);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--accent-cyan);
+  pointer-events: none;
+  z-index: 9999;
+  display: none;
+  white-space: nowrap;
+  box-shadow: 0 0 16px rgba(0,229,255,0.2);
+  letter-spacing: 1px;
+}
+.tooltip.visible { display: block; }
+
+/* ── REACTION PARTICLES ── */
+.particle {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particleFly 1.2s ease-out forwards;
+}
+@keyframes particleFly {
+  0% { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.2); }
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: bubbleRise 1.5s ease-out forwards;
+}
+@keyframes bubbleRise {
+  0% { opacity: 0.8; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-80px) scale(0.5); }
+}
+
+/* ── RIGHT PANEL (AI TUTOR) ── */
+.right-panel {
+  width: var(--panel-w);
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border-glow);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.ai-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ai-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 0 12px rgba(178,75,255,0.4);
+  flex-shrink: 0;
+}
+.ai-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--accent-cyan);
+}
+.ai-status { font-size: 10px; color: var(--accent-green); font-family: 'Share Tech Mono', monospace; }
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-glow) transparent;
+}
+.chat-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.chat-msg .msg-label { font-size: 9px; letter-spacing: 1px; color: var(--text-dim); font-family: 'Share Tech Mono', monospace; padding: 0 2px; }
+.chat-msg .msg-bubble {
+  padding: 8px 11px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.chat-msg.ai .msg-bubble {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  border-radius: 3px 8px 8px 8px;
+}
+.chat-msg.user .msg-bubble {
+  background: rgba(0,229,255,0.1);
+  border: 1px solid rgba(0,229,255,0.2);
+  color: var(--accent-cyan);
+  border-radius: 8px 3px 8px 8px;
+  align-self: flex-end;
+}
+.chat-msg.user { align-items: flex-end; }
+
+.chat-input-area {
+  padding: 12px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  gap: 8px;
+}
+.chat-input {
+  flex: 1;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--text-primary);
+  font-family: 'Rajdhani', sans-serif;
+  outline: none;
+  resize: none;
+  height: 40px;
+  transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: rgba(0,229,255,0.4); }
+.send-btn {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent-cyan), rgba(0,229,255,0.5));
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.send-btn:hover { transform: scale(1.08); box-shadow: 0 0 16px rgba(0,229,255,0.4); }
+
+/* ── PROCEDURE PANEL ── */
+.procedure-panel {
+  height: 160px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-glow);
+  backdrop-filter: blur(20px);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+.proc-header {
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.proc-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+}
+.proc-exp-name { font-size: 12px; color: var(--accent-amber); font-weight: 600; letter-spacing: 1px; }
+.proc-steps {
+  flex: 1;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  padding: 10px 16px;
+  align-items: flex-start;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-glow) transparent;
+}
+.proc-step {
+  flex-shrink: 0;
+  width: 200px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  margin-right: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.proc-step.current { border-color: var(--accent-cyan); box-shadow: 0 0 12px rgba(0,229,255,0.2); }
+.proc-step.done { border-color: rgba(57,255,20,0.4); background: rgba(57,255,20,0.04); }
+.proc-step.completing { border-color: var(--accent-amber); box-shadow: 0 0 14px rgba(255,179,0,0.3); }
+
+/* Auto-complete progress bar */
+.step-progress {
+  height: 3px;
+  background: rgba(255,179,0,0.15);
+  border-radius: 0;
+  overflow: hidden;
+  display: none;
+}
+.proc-step.completing .step-progress { display: block; }
+.step-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-amber), var(--accent-green));
+  border-radius: 2px;
+  transition: width linear;
+  box-shadow: 0 0 6px rgba(255,179,0,0.6);
+}
+
+/* Done state strikethrough on text */
+.proc-step.done .step-text {
+  color: var(--accent-green);
+  opacity: 0.75;
+  text-decoration: line-through;
+  text-decoration-color: rgba(57,255,20,0.5);
+}
+.proc-step.done .step-badge { background: var(--accent-green); }
+
+/* Completing pulse on badge */
+.proc-step.completing .step-badge {
+  background: var(--accent-amber);
+  animation: completingPulse 0.5s ease-in-out infinite alternate;
+}
+@keyframes completingPulse {
+  0% { box-shadow: 0 0 4px var(--accent-amber); }
+  100% { box-shadow: 0 0 12px var(--accent-amber), 0 0 20px rgba(255,179,0,0.4); }
+}
+
+/* Flash green when done */
+@keyframes doneFlash {
+  0% { background: rgba(57,255,20,0.3); }
+  100% { background: rgba(57,255,20,0.04); }
+}
+.proc-step.done { animation: doneFlash 0.5s ease-out forwards; }
+.step-num {
+  padding: 5px 8px 3px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 1px;
+}
+.step-num .step-badge {
+  background: var(--accent-cyan);
+  color: var(--bg-deep);
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  font-size: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.step-text {
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--text-primary);
+  outline: none;
+  flex: 1;
+  line-height: 1.4;
+  min-height: 44px;
+  border: none;
+  resize: none;
+  background: transparent;
+  width: 100%;
+  font-family: 'Rajdhani', sans-serif;
+  cursor: text;
+}
+.step-text:focus { color: var(--accent-cyan); }
+.step-actions {
+  padding: 4px 6px;
+  display: flex;
+  gap: 4px;
+  border-top: 1px solid var(--border-subtle);
+}
+.step-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  font-size: 9px;
+  cursor: pointer;
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.5px;
+  transition: all 0.15s;
+  background: transparent;
+  color: var(--text-dim);
+}
+.step-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+.step-btn.done-btn:hover { border-color: var(--accent-green); color: var(--accent-green); }
+.add-step-btn {
+  flex-shrink: 0;
+  width: 80px;
+  background: rgba(0,229,255,0.05);
+  border: 1px dashed rgba(0,229,255,0.25);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 20px;
+  transition: all 0.2s;
+  height: 90px;
+  margin-right: 8px;
+}
+.add-step-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); background: rgba(0,229,255,0.08); }
+.add-step-btn span { font-family: 'Share Tech Mono', monospace; font-size: 9px; letter-spacing: 1px; }
+
+/* ── NOTIFICATION ── */
+.notif {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(8,25,45,0.95);
+  border: 1px solid var(--accent-amber);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--accent-amber);
+  z-index: 9998;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  box-shadow: 0 0 20px rgba(255,179,0,0.2);
+}
+.notif.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── REACTION OVERLAY ── */
+.reaction-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+.flame {
+  position: absolute;
+  animation: flameFlicker 0.15s ease-in-out infinite alternate;
+}
+@keyframes flameFlicker {
+  0% { transform: scaleX(1) scaleY(1) rotate(-2deg); }
+  100% { transform: scaleX(0.9) scaleY(1.1) rotate(2deg); }
+}
+.smoke-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(180,180,200,0.15);
+  animation: smokeRise 2s ease-out forwards;
+}
+@keyframes smokeRise {
+  0% { opacity: 0.8; transform: translateY(0) scale(0.5); }
+  100% { opacity: 0; transform: translateY(-120px) scale(2); }
+}
+
+.step-hint {
+  padding: 3px 8px 5px;
+  font-size: 9px;
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--accent-amber);
+  opacity: 0.75;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+  border-top: 1px dashed rgba(255,179,0,0.15);
+}
+.proc-step.done .step-hint { display: none; }
+
+.action-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+  margin-left: auto;
+  font-weight: 700;
+}
+.place-tag    { background: rgba(0,229,255,0.15);  color: var(--accent-cyan);   border: 1px solid rgba(0,229,255,0.3); }
+.interact-tag { background: rgba(178,75,255,0.15); color: var(--accent-purple); border: 1px solid rgba(178,75,255,0.3); }
+.combine-tag  { background: rgba(255,61,61,0.15);  color: var(--accent-red);    border: 1px solid rgba(255,61,61,0.3); }
+.observe-tag  { background: rgba(57,255,20,0.15);  color: var(--accent-green);  border: 1px solid rgba(57,255,20,0.3); }
+.record-tag   { background: rgba(255,179,0,0.15);  color: var(--accent-amber);  border: 1px solid rgba(255,179,0,0.3); }
+
+@keyframes benchBtnPulse {
+  0%,100% { box-shadow: 0 0 20px rgba(0,229,255,0.3), 0 0 0 0 rgba(0,229,255,0.15); }
+  50%     { box-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 0 8px rgba(0,229,255,0); }
+}
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
+
+/* glow animations */
+@keyframes glow {
+  0%,100%{box-shadow:0 0 10px rgba(0,229,255,0.3)} 50%{box-shadow:0 0 20px rgba(0,229,255,0.6)}
+}
+
+/* ── RECORD MODAL ── */
+.record-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 18, 0.88);
+  backdrop-filter: blur(10px);
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+}
+.record-modal.open { display: flex; animation: modalIn 0.3s ease; }
+@keyframes modalIn { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+.record-card {
+  background: rgba(8, 22, 42, 0.98);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 12px;
+  width: min(700px, 94vw);
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 60px rgba(0,229,255,0.15), 0 20px 60px rgba(0,0,0,0.6);
+}
+.record-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-glow);
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(0,229,255,0.04);
+}
+.record-title {
+  font-family: 'Orbitron', sans-serif; font-size: 14px;
+  letter-spacing: 4px; color: var(--accent-cyan);
+  text-shadow: 0 0 16px rgba(0,229,255,0.5);
+}
+.record-exp { font-size: 13px; color: var(--accent-amber); font-weight: 600; letter-spacing: 1px; flex: 1; }
+.record-close {
+  background: rgba(255,61,61,0.1); border: 1px solid rgba(255,61,61,0.3);
+  color: var(--accent-red); width: 28px; height: 28px;
+  border-radius: 50%; cursor: pointer; font-size: 12px; transition: all 0.2s;
+}
+.record-close:hover { background: rgba(255,61,61,0.25); }
+.record-body { padding: 20px; overflow-y: auto; flex: 1; scrollbar-width: thin; scrollbar-color: var(--border-glow) transparent; }
+.record-section-title {
+  font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase;
+  margin: 0 0 10px; padding-bottom: 5px; border-bottom: 1px solid var(--border-subtle);
+}
+.record-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+.record-table th {
+  background: rgba(0,229,255,0.08); color: var(--accent-cyan);
+  font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  letter-spacing: 2px; padding: 8px 12px; text-align: left;
+  border-bottom: 1px solid var(--border-glow); text-transform: uppercase;
+}
+.record-table td {
+  padding: 8px 12px; border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary); vertical-align: top; line-height: 1.5;
+}
+.record-table tr:hover td { background: rgba(0,229,255,0.03); }
+.record-table td.val { font-family: 'Share Tech Mono', monospace; color: var(--accent-green); }
+.record-table td.label { color: var(--text-dim); font-size: 12px; }
+.record-result-box {
+  background: rgba(57,255,20,0.06); border: 1px solid rgba(57,255,20,0.25);
+  border-radius: 8px; padding: 14px 16px; margin-top: 8px;
+}
+.record-result-box .result-label {
+  font-family: 'Share Tech Mono', monospace; font-size: 9px;
+  letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;
+}
+.record-result-box .result-val {
+  font-family: 'Orbitron', sans-serif; font-size: 18px;
+  color: var(--accent-green); text-shadow: 0 0 10px rgba(57,255,20,0.4);
+}
+.record-obs-box {
+  background: rgba(0,229,255,0.04); border: 1px solid var(--border-subtle);
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+  font-size: 12px; color: var(--text-primary); line-height: 1.7;
+}
+.record-obs-box b { color: var(--accent-amber); }
+.record-footer {
+  padding: 12px 20px; border-top: 1px solid var(--border-subtle);
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim);
+}
+.record-print {
+  background: rgba(0,229,255,0.1); border: 1px solid var(--border-glow);
+  color: var(--accent-cyan); padding: 6px 14px; border-radius: 5px;
+  cursor: pointer; font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; transition: all 0.2s;
+}
+.record-print:hover { background: rgba(0,229,255,0.2); }
+
+/* ── COLOR CHANGE BANNER ── */
+.color-change-label {
+  position: fixed;
+  top: 80px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(5,15,28,0.96);
+  border: 1px solid var(--accent-green);
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-family: 'Share Tech Mono', monospace; font-size: 13px;
+  color: var(--accent-green);
+  z-index: 8000; pointer-events: none; opacity: 0;
+  transition: opacity 0.35s;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 0 20px rgba(57,255,20,0.2); white-space: nowrap;
+}
+.color-change-label.visible { opacity: 1; }
+.ccl-swatch {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3); display: inline-block; flex-shrink: 0;
+}
+@keyframes liquidSwap {
+  0%  { opacity: 0.5; transform: scaleY(0.95); }
+  50% { opacity: 1;   transform: scaleY(1.02); }
+  100%{ opacity: 0.85; transform: scaleY(1); }
+}
+.liquid-changing { animation: liquidSwap 1.4s ease; }
+
+</style>
+</head>
+<body>
+
+<div class="tooltip" id="tooltip"></div>
+<div class="notif" id="notif"></div>
+
+<header>
+  <h1>⚗ VIRTUAL SCIENCE LAB</h1>
+  <div class="header-meta">
+    <span><span class="status-dot"></span>SYSTEM ONLINE</span>
+    <span id="clock">00:00:00</span>
+    <span style="color:var(--accent-amber)">SESSION ACTIVE</span>
+  </div>
+</header>
+
+<div class="workspace">
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="panel-title">Experiments</div>
+    <div class="exp-section">
+      <div class="exp-section-label">⚗ Chemistry</div>
+      <div class="exp-item active" data-exp="acid-base" onclick="loadExperiment('acid-base')">
+        <span class="exp-icon">🧪</span> Acid-Base Reaction
+      </div>
+      <div class="exp-item" data-exp="combustion" onclick="loadExperiment('combustion')">
+        <span class="exp-icon">🔥</span> Combustion Study
+      </div>
+      <div class="exp-item" data-exp="crystallize" onclick="loadExperiment('crystallize')">
+        <span class="exp-icon">💎</span> Crystallization
+      </div>
+      <div class="exp-item" data-exp="titration" onclick="loadExperiment('titration')">
+        <span class="exp-icon">💧</span> Titration
+      </div>
+    </div>
+    <div class="exp-section">
+      <div class="exp-section-label">⚛ Physics</div>
+      <div class="exp-item" data-exp="optics" onclick="loadExperiment('optics')">
+        <span class="exp-icon">🔆</span> Optics & Prism
+      </div>
+      <div class="exp-item" data-exp="pendulum" onclick="loadExperiment('pendulum')">
+        <span class="exp-icon">⏱</span> Pendulum Motion
+      </div>
+      <div class="exp-item" data-exp="density" onclick="loadExperiment('density')">
+        <span class="exp-icon">📊</span> Density Study
+      </div>
+    </div>
+    <div class="equipment-tray">
+      <div class="tray-label">Equipment</div>
+      <div class="tray-grid" id="trayGrid"></div>
+    </div>
+  </div>
+
+  <!-- LAB BENCH -->
+  <div class="lab-area" id="labArea">
+    <div class="reaction-overlay" id="reactionOverlay"></div>
+    <div class="bench-surface"></div>
+    <div class="bench-front"></div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="ai-header">
+      <div class="ai-avatar">🤖</div>
+      <div>
+        <div class="ai-name">AI TUTOR</div>
+        <div class="ai-status">● Online</div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chatInput" placeholder="Ask the AI Tutor..." rows="1"></textarea>
+      <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROCEDURE PANEL -->
+<div class="procedure-panel">
+  <div class="proc-header">
+    <div class="proc-title">Procedure Steps</div>
+    <div class="proc-exp-name" id="procExpName">Acid-Base Reaction</div>
+  </div>
+  <div class="proc-steps" id="procSteps"></div>
+</div>
+
+<!-- RECORD MODAL -->
+<div class="record-modal" id="recordModal">
+  <div class="record-card">
+    <div class="record-header">
+      <div class="record-title" id="recordTitle">LAB RECORD</div>
+      <div class="record-exp" id="recordExpName"></div>
+      <button class="record-close" onclick="closeRecord()">✕</button>
+    </div>
+    <div class="record-body" id="recordBody"></div>
+    <div class="record-footer">
+      <span id="recordTimestamp"></span>
+      <button class="record-print" onclick="window.print()">🖨 Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- COLOR CHANGE BANNER -->
+<div id="colorChangeLabel" class="color-change-label"></div>
+
+<script>
+// ── EQUIPMENT DEFINITIONS ──
+const equipmentDefs = [
+  { id:'beaker', name:'Beaker', color:'#00bfff', liquidColor:'rgba(0,150,255,0.6)', svgType:'beaker' },
+  { id:'testtube', name:'Test Tube', color:'#39ff14', liquidColor:'rgba(57,255,20,0.6)', svgType:'testtube' },
+  { id:'flask', name:'Erlenmeyer Flask', color:'#b24bff', liquidColor:'rgba(178,75,255,0.5)', svgType:'flask' },
+  { id:'bunsen', name:'Bunsen Burner', color:'#ff8c00', liquidColor:null, svgType:'bunsen' },
+  { id:'petri', name:'Petri Dish', color:'#00e5ff', liquidColor:'rgba(0,229,255,0.3)', svgType:'petri' },
+  { id:'microscope', name:'Microscope', color:'#aaa', liquidColor:null, svgType:'microscope' },
+  { id:'pipette', name:'Pipette', color:'#ff69b4', liquidColor:'rgba(255,105,180,0.6)', svgType:'pipette' },
+  { id:'roundflask', name:'Round Flask', color:'#ffd700', liquidColor:'rgba(255,215,0,0.5)', svgType:'roundflask' },
+];
+
+// ── CHEMICAL DEFINITIONS (inlined SVGs) ──
+const chemicalDefs = [
+  {
+    id: 'hcl', name: 'HCl', fullName: 'Hydrochloric Acid', hazard: '⚠ Corrosive',
+    reactionColor: 'rgba(255,200,100,0.85)',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M30 50L20 55L15 150Q14 165 25 168L75 168Q86 165 85 150L80 55L70 50Z" fill="rgba(220,240,255,.3)" stroke="#5BAFD6" stroke-width="2.5"/><path d="M16 110L15 150Q14 163 25 166L75 166Q86 163 85 150L84 110Z" fill="rgba(200,230,255,.5)"/><ellipse cx="50" cy="110" rx="34" ry="5" fill="rgba(200,230,255,.7)"/><rect x="35" y="30" width="30" height="25" rx="5" fill="#889aab" stroke="#556677" stroke-width="2"/><rect x="40" y="22" width="20" height="12" rx="4" fill="#778899"/><rect x="20" y="75" width="60" height="30" rx="4" fill="rgba(255,200,100,.9)"/><text x="50" y="87" font-size="11" font-weight="bold" fill="#222" text-anchor="middle" font-family="monospace">HCl</text><text x="50" y="99" font-size="8" fill="#333" text-anchor="middle" font-family="monospace">Hydrochloric</text></svg>`
+  },
+  {
+    id: 'naoh', name: 'NaOH', fullName: 'Sodium Hydroxide', hazard: '⚠ Caustic',
+    reactionColor: 'rgba(100,240,150,0.85)',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M30 50L20 55L15 150Q14 165 25 168L75 168Q86 165 85 150L80 55L70 50Z" fill="rgba(220,255,220,.3)" stroke="#5BD65B" stroke-width="2.5"/><path d="M16 115L15 150Q14 163 25 166L75 166Q86 163 85 150L84 115Z" fill="rgba(150,240,150,.45)"/><ellipse cx="50" cy="115" rx="34" ry="5" fill="rgba(150,240,150,.65)"/><rect x="35" y="30" width="30" height="25" rx="5" fill="#889aab" stroke="#556677" stroke-width="2"/><rect x="40" y="22" width="20" height="12" rx="4" fill="#778899"/><rect x="20" y="75" width="60" height="30" rx="4" fill="rgba(100,200,100,.9)"/><text x="50" y="87" font-size="11" font-weight="bold" fill="#fff" text-anchor="middle" font-family="monospace">NaOH</text><text x="50" y="99" font-size="7.5" fill="#eee" text-anchor="middle" font-family="monospace">Sodium Hydroxide</text></svg>`
+  },
+  {
+    id: 'h2so4', name: 'H₂SO₄', fullName: 'Sulfuric Acid', hazard: '☠ Highly Corrosive',
+    reactionColor: 'rgba(240,240,80,0.85)',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M30 50L20 55L15 150Q14 165 25 168L75 168Q86 165 85 150L80 55L70 50Z" fill="rgba(255,255,200,.3)" stroke="#D6D65B" stroke-width="2.5"/><path d="M16 115L15 150Q14 163 25 166L75 166Q86 163 85 150L84 115Z" fill="rgba(240,240,100,.45)"/><ellipse cx="50" cy="115" rx="34" ry="5" fill="rgba(240,240,100,.65)"/><rect x="35" y="30" width="30" height="25" rx="5" fill="#889aab" stroke="#556677" stroke-width="2"/><rect x="40" y="22" width="20" height="12" rx="4" fill="#778899"/><rect x="18" y="73" width="64" height="32" rx="4" fill="rgba(220,60,60,.9)"/><text x="50" y="86" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle" font-family="monospace">H2SO4</text><text x="50" y="98" font-size="7.5" fill="#ffe" text-anchor="middle" font-family="monospace">Sulfuric Acid</text></svg>`
+  },
+  {
+    id: 'h2o2', name: 'H₂O₂', fullName: 'Hydrogen Peroxide', hazard: '⚠ Oxidizer',
+    reactionColor: 'rgba(150,200,255,0.85)',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M30 50L20 55L15 150Q14 165 25 168L75 168Q86 165 85 150L80 55L70 50Z" fill="rgba(200,230,255,.3)" stroke="#88BBDD" stroke-width="2.5"/><path d="M16 120L15 150Q14 163 25 166L75 166Q86 163 85 150L84 120Z" fill="rgba(150,200,255,.45)"/><ellipse cx="50" cy="120" rx="34" ry="5" fill="rgba(150,200,255,.65)"/><rect x="35" y="30" width="30" height="25" rx="5" fill="#889aab" stroke="#556677" stroke-width="2"/><rect x="40" y="22" width="20" height="12" rx="4" fill="#778899"/><rect x="18" y="73" width="64" height="32" rx="4" fill="rgba(80,140,200,.9)"/><text x="50" y="86" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle" font-family="monospace">H2O2</text><text x="50" y="98" font-size="7.5" fill="#ddf" text-anchor="middle" font-family="monospace">Hydrogen Peroxide</text></svg>`
+  },
+];
+
+// ── SVG GENERATORS ──
+let _svgUid = 0;
+function uid() { return 's' + (_svgUid++); }
+
+function svgBeaker(color, liquidColor) {
+  const id = uid();
+  return `<svg width="70" height="90" viewBox="0 0 70 90" overflow="visible">
+    <defs>
+      <clipPath id="bc${id}"><polygon points="10,5 60,5 65,80 5,80"/></clipPath>
+      <linearGradient id="bg${id}" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0.06"/>
+      </linearGradient>
+    </defs>
+    <polygon points="10,5 60,5 65,80 5,80" fill="url(#bg${id})" stroke="${color}" stroke-width="2"/>
+    <rect x="5" y="80" width="60" height="5" rx="2" fill="${color}" opacity="0.7"/>
+    ${liquidColor ? `
+    <g clip-path="url(#bc${id})">
+      <rect x="6" y="44" width="58" height="36" fill="${liquidColor}" opacity="0.75"/>
+      <ellipse cx="35" cy="44" rx="28" ry="5" fill="${liquidColor}" opacity="0.9"/>
+    </g>` : ''}
+    <line x1="10" y1="5" x2="5" y2="0" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="60" y1="5" x2="65" y2="0" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
+    <polygon points="10,5 60,5 65,80 5,80" fill="none" stroke="${color}" stroke-width="2"/>
+  </svg>`;
+}
+
+function svgTestTube(color, liquidColor) {
+  const id = uid();
+  return `<svg width="40" height="110" viewBox="0 0 40 110">
+    <defs>
+      <clipPath id="tc${id}"><rect x="12" y="5" width="16" height="73" rx="8"/></clipPath>
+      <linearGradient id="tg${id}" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
+        <stop offset="50%" stop-color="${color}" stop-opacity="0.08"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0.18"/>
+      </linearGradient>
+    </defs>
+    <rect x="12" y="5" width="16" height="65" fill="url(#tg${id})" stroke="${color}" stroke-width="1.5"/>
+    <ellipse cx="20" cy="70" rx="8" ry="8" fill="url(#tg${id})" stroke="${color}" stroke-width="1.5"/>
+    ${liquidColor ? `
+    <g clip-path="url(#tc${id})">
+      <rect x="12" y="44" width="16" height="26" fill="${liquidColor}" opacity="0.85"/>
+      <ellipse cx="20" cy="44" rx="8" ry="3" fill="${liquidColor}" opacity="1"/>
+    </g>` : ''}
+    <rect x="8" y="2" width="24" height="6" rx="3" fill="${color}" opacity="0.6"/>
+  </svg>`;
+}
+
+function svgFlask(color, liquidColor) {
+  const id = uid();
+  return `<svg width="80" height="100" viewBox="0 0 80 100">
+    <defs>
+      <clipPath id="fc${id}"><polygon points="8,92 72,92 62,55 55,18 25,18 18,55"/></clipPath>
+      <linearGradient id="fg${id}" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="${color}" stop-opacity="0.06"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0.15"/>
+      </linearGradient>
+    </defs>
+    <polygon points="8,92 72,92 62,55 55,18 25,18 18,55" fill="url(#fg${id})" stroke="${color}" stroke-width="2"/>
+    <rect x="25" y="4" width="30" height="16" rx="4" fill="url(#fg${id})" stroke="${color}" stroke-width="1.5"/>
+    ${liquidColor ? `
+    <g clip-path="url(#fc${id})">
+      <polygon points="8,92 72,92 66,66 14,66" fill="${liquidColor}" opacity="0.8"/>
+      <ellipse cx="40" cy="66" rx="26" ry="5" fill="${liquidColor}" opacity="1"/>
+    </g>` : ''}
+    <rect x="5" y="90" width="70" height="5" rx="2.5" fill="${color}" opacity="0.5"/>
+  </svg>`;
+}
+
+function svgBunsen(color) {
+  return `<svg width="60" height="100" viewBox="0 0 60 100">
+    <rect x="20" y="68" width="20" height="26" rx="3" fill="#2a2a2a" stroke="#4a4a4a" stroke-width="1.5"/>
+    <rect x="10" y="91" width="40" height="8" rx="4" fill="#1a1a1a" stroke="#3a3a3a" stroke-width="1"/>
+    <rect x="25" y="38" width="10" height="32" rx="3" fill="#3a3a3a" stroke="#5a5a5a" stroke-width="1"/>
+    <ellipse cx="30" cy="38" rx="9" ry="4.5" fill="#4a4a4a" stroke="#6a6a6a" stroke-width="1"/>
+    <ellipse cx="30" cy="36" rx="11" ry="5" fill="${color}" opacity="0.4"/>
+    <circle cx="22" cy="78" r="3" fill="#555" stroke="#666" stroke-width="1"/>
+    <line x1="22" y1="78" x2="15" y2="78" stroke="#555" stroke-width="2"/>
+  </svg>`;
+}
+
+function svgPetri(color, liquidColor) {
+  const id = uid();
+  return `<svg width="100" height="48" viewBox="0 0 100 48">
+    <defs>
+      <clipPath id="pc${id}"><ellipse cx="50" cy="32" rx="46" ry="12"/></clipPath>
+    </defs>
+    <ellipse cx="50" cy="32" rx="46" ry="12" fill="rgba(0,229,255,0.05)" stroke="${color}" stroke-width="1.5"/>
+    ${liquidColor ? `
+    <g clip-path="url(#pc${id})">
+      <ellipse cx="50" cy="32" rx="43" ry="9" fill="${liquidColor}" opacity="0.7"/>
+    </g>` : ''}
+    <ellipse cx="50" cy="18" rx="46" ry="12" fill="rgba(0,229,255,0.03)" stroke="${color}" stroke-width="1" stroke-dasharray="4,3"/>
+  </svg>`;
+}
+
+function svgMicroscope(color) {
+  return `<svg width="70" height="100" viewBox="0 0 70 100">
+    <rect x="15" y="85" width="40" height="8" rx="4" fill="#333" stroke="#555" stroke-width="1"/>
+    <rect x="28" y="50" width="14" height="38" rx="2" fill="#3a3a3a" stroke="#555" stroke-width="1"/>
+    <rect x="30" y="30" width="10" height="22" rx="2" fill="#444" stroke="#555" stroke-width="1"/>
+    <circle cx="35" cy="28" r="8" fill="rgba(0,229,255,0.12)" stroke="${color}" stroke-width="2"/>
+    <circle cx="35" cy="28" r="4" fill="rgba(0,229,255,0.35)" stroke="${color}" stroke-width="1"/>
+    <line x1="20" y1="50" x2="35" y2="50" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="18" cy="50" r="4" fill="#444" stroke="#555" stroke-width="1"/>
+    <rect x="10" y="78" width="50" height="4" rx="2" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+  </svg>`;
+}
+
+function svgPipette(color, liquidColor) {
+  const id = uid();
+  return `<svg width="30" height="120" viewBox="0 0 30 120">
+    <defs><clipPath id="pic${id}"><rect x="11" y="14" width="8" height="62"/></clipPath></defs>
+    <ellipse cx="15" cy="10" rx="13" ry="9" fill="${color}" opacity="0.2" stroke="${color}" stroke-width="1.5"/>
+    <rect x="11" y="14" width="8" height="62" fill="${color}" opacity="0.12" stroke="${color}" stroke-width="1.2"/>
+    ${liquidColor ? `
+    <g clip-path="url(#pic${id})">
+      <rect x="12" y="50" width="6" height="26" fill="${liquidColor}" opacity="0.9"/>
+    </g>` : ''}
+    <polygon points="11,76 19,76 15,112" fill="${color}" opacity="0.15" stroke="${color}" stroke-width="1.2"/>
+    <circle cx="15" cy="115" r="3.5" fill="${liquidColor || color}" opacity="0.9"/>
+  </svg>`;
+}
+
+function svgRoundFlask(color, liquidColor) {
+  const id = uid();
+  return `<svg width="80" height="105" viewBox="0 0 80 105">
+    <defs>
+      <clipPath id="rfc${id}"><circle cx="40" cy="68" r="32"/></clipPath>
+      <radialGradient id="rfg${id}" cx="35%" cy="35%">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.22"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0.06"/>
+      </radialGradient>
+    </defs>
+    <circle cx="40" cy="68" r="32" fill="url(#rfg${id})" stroke="${color}" stroke-width="2"/>
+    <rect x="33" y="14" width="14" height="38" rx="3" fill="${color}" opacity="0.1" stroke="${color}" stroke-width="1.5"/>
+    ${liquidColor ? `
+    <g clip-path="url(#rfc${id})">
+      <ellipse cx="40" cy="82" rx="30" ry="18" fill="${liquidColor}" opacity="0.8"/>
+    </g>` : ''}
+    <rect x="29" y="11" width="22" height="5" rx="2.5" fill="${color}" opacity="0.5"/>
+  </svg>`;
+}
+
+function getItemSVG(def) {
+  switch(def.svgType) {
+    case 'beaker': return svgBeaker(def.color, def.liquidColor);
+    case 'testtube': return svgTestTube(def.color, def.liquidColor);
+    case 'flask': return svgFlask(def.color, def.liquidColor);
+    case 'bunsen': return svgBunsen(def.color);
+    case 'petri': return svgPetri(def.color, def.liquidColor);
+    case 'microscope': return svgMicroscope(def.color);
+    case 'pipette': return svgPipette(def.color, def.liquidColor);
+    case 'roundflask': return svgRoundFlask(def.color, def.liquidColor);
+  }
+}
+
+// ── TRAY ──
+const trayGrid = document.getElementById('trayGrid');
+equipmentDefs.forEach(def => {
+  const div = document.createElement('div');
+  div.className = 'tray-item';
+  div.innerHTML = `<div class="item-svg">${getItemSVG(def)}</div><div class="item-name">${def.name.toUpperCase()}</div>`;
+  div.setAttribute('draggable', true);
+  div.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('equipId', def.id);
+  });
+  trayGrid.appendChild(div);
+});
+
+// Chemicals divider
+const chemDiv = document.createElement('div');
+chemDiv.className = 'tray-section-divider';
+chemDiv.style.cssText = 'grid-column:1/-1;';
+chemDiv.innerHTML = '⚗ Chemicals';
+trayGrid.appendChild(chemDiv);
+
+// Chemical items
+chemicalDefs.forEach(chem => {
+  const div = document.createElement('div');
+  div.className = 'tray-item chemical';
+  div.innerHTML = `
+    <div class="item-svg" style="height:52px;display:flex;align-items:center;justify-content:center;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200" width="38" height="76">${div._svgInner = ''}</svg>
+    </div>
+    <div class="item-name">${chem.name}</div>
+    <div class="hazard-tag">${chem.hazard}</div>
+  `;
+  // Use the real inlined SVG
+  div.querySelector('.item-svg').innerHTML = `<div style="width:38px;height:76px;overflow:hidden;">${chem.svg.replace('viewBox="0 0 100 200"', 'viewBox="0 0 100 200" width="38" height="76"')}</div>`;
+  div.setAttribute('draggable', true);
+  div.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('chemId', chem.id);
+  });
+  trayGrid.appendChild(div);
+});
+
+// ── LAB AREA DRAG-AND-DROP ──
+const labArea = document.getElementById('labArea');
+labArea.addEventListener('dragover', e => e.preventDefault());
+labArea.addEventListener('drop', e => {
+  e.preventDefault();
+  const rect = labArea.getBoundingClientRect();
+  const x = e.clientX - rect.left - 35;
+  const y = e.clientY - rect.top - 60;
+
+  const equipId = e.dataTransfer.getData('equipId');
+  if (equipId) {
+    const def = equipmentDefs.find(d => d.id === equipId);
+    if (def) spawnItem(def, x, y);
+    return;
+  }
+
+  const chemId = e.dataTransfer.getData('chemId');
+  if (chemId) {
+    const chem = chemicalDefs.find(c => c.id === chemId);
+    if (chem) spawnChem(chem, x, y);
+  }
+});
+
+// ── SPAWN ITEM ON BENCH ──
+const labItems = [];
+const tooltip = document.getElementById('tooltip');
+
+function spawnItem(def, x, y) {
+  const el = document.createElement('div');
+  el.className = 'lab-item';
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.innerHTML = getItemSVG(def);
+  el.dataset.id = def.id;
+  el.dataset.name = def.name;
+
+  el.addEventListener('mouseenter', ev => {
+    tooltip.textContent = '⚗ ' + def.name.toUpperCase();
+    tooltip.classList.add('visible');
+  });
+  el.addEventListener('mousemove', ev => {
+    tooltip.style.left = (ev.clientX + 14) + 'px';
+    tooltip.style.top = (ev.clientY - 32) + 'px';
+  });
+  el.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+
+  makeDraggable(el);
+  el.addEventListener('dblclick', () => triggerReaction(el, def));
+  labArea.appendChild(el);
+  labItems.push({ el, def });
+
+  // Check if placing this item satisfies the current step
+  checkPlaceAction(def.id);
+  showNotif(`${def.name} placed on bench`);
+}
+
+function spawnChem(chem, x, y) {
+  const el = document.createElement('div');
+  el.className = 'lab-chem';
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.dataset.chemId = chem.id;
+
+  const svgScaled = chem.svg.replace('viewBox="0 0 100 200"', 'viewBox="0 0 100 200" width="55" height="110"');
+  el.innerHTML = svgScaled + `<div class="chem-bench-label">${chem.name}</div>`;
+
+  el.addEventListener('mouseenter', () => {
+    tooltip.textContent = `⚗ ${chem.fullName} · ${chem.hazard}`;
+    tooltip.classList.add('visible');
+  });
+  el.addEventListener('mousemove', ev => {
+    tooltip.style.left = (ev.clientX + 14) + 'px';
+    tooltip.style.top = (ev.clientY - 32) + 'px';
+  });
+  el.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+
+  makeDraggable(el);
+  el.addEventListener('dblclick', () => triggerChemReaction(el, chem));
+  labArea.appendChild(el);
+
+  // Check place action
+  checkPlaceAction(chem.id);
+  showNotif(`${chem.fullName} placed on bench`);
+}
+
+function triggerChemReaction(el, chem) {
+  el.classList.add('reacting');
+  setTimeout(() => el.classList.remove('reacting'), 600);
+
+  const rect = el.getBoundingClientRect();
+  const labRect = labArea.getBoundingClientRect();
+  const cx = rect.left - labRect.left + rect.width / 2;
+  const cy = rect.top - labRect.top + rect.height / 3;
+
+  spawnBubbles(cx, cy, chem.reactionColor);
+  spawnParticles(cx, cy, chem.reactionColor);
+  colorFlashEl(el, chem.reactionColor);
+
+  // Check interact action first
+  const interactMatched = checkInteractAction(chem.id);
+
+  if (!interactMatched) {
+    // Check for combo with nearby chemical
+    let comboFound = false;
+    document.querySelectorAll('.lab-chem').forEach(other => {
+      if (other === el || comboFound) return;
+      const oRect = other.getBoundingClientRect();
+      const dist = Math.hypot(rect.left - oRect.left, rect.top - oRect.top);
+      if (dist < 140) {
+        const otherId = other.dataset.chemId;
+        // Check if this combo satisfies current step
+        const stepMatched = checkCombineAction(chem.id, otherId);
+        // Also run built-in combo visual regardless
+        const combo = getComboReaction(chem.id, otherId);
+        if (combo) {
+          comboFound = true;
+          setTimeout(() => {
+            spawnParticles(cx, cy, combo.color);
+            spawnBubbles(cx, cy, combo.color);
+            if (!stepMatched) {
+              showNotif(`💥 ${combo.name} (not required yet)`);
+              addAiMessage(`🔬 ${combo.equation} — ${combo.description}`);
+            }
+          }, 300);
+        }
+      }
+    });
+    if (!comboFound && !interactMatched) {
+      addAiMessage(`You activated ${chem.name}. ${getChemInfo(chem.id)} Current step needs: <i>${getStepHint()}</i>`);
+    }
+  }
+}
+
+function getChemInfo(id) {
+  const info = {
+    hcl:   'HCl is a strong acid (pH ≈ 0–1). It fully dissociates: HCl → H⁺ + Cl⁻.',
+    naoh:  'NaOH is a strong base. It dissociates: NaOH → Na⁺ + OH⁻. Highly exothermic when dissolved.',
+    h2so4: 'H₂SO₄ is a diprotic strong acid — the most industrially produced chemical in the world.',
+    h2o2:  'H₂O₂ decomposes: 2H₂O₂ → 2H₂O + O₂↑. Used as an oxidizer and antiseptic.',
+  };
+  return info[id] || '';
+}
+
+function colorFlashEl(el, color) {
+  el.style.filter = `drop-shadow(0 0 24px ${color})`;
+  setTimeout(() => { el.style.filter = ''; }, 700);
+}
+
+function getComboReaction(a, b) {
+  const combos = {
+    'hcl+naoh': { name:'Neutralization!', equation:'HCl + NaOH → NaCl + H₂O', color:'rgba(255,255,150,0.9)', description:'Acid-base neutralization produces table salt and water. The solution heats up noticeably.' },
+    'h2so4+naoh': { name:'Strong Neutralization!', equation:'H₂SO₄ + 2NaOH → Na₂SO₄ + 2H₂O', color:'rgba(255,120,80,0.9)', description:'Sulfuric acid reacts vigorously with NaOH. Highly exothermic — do NOT mix concentrated forms!' },
+    'h2o2+hcl': { name:'Oxidation Reaction!', equation:'H₂O₂ + 2HCl → Cl₂ + 2H₂O', color:'rgba(200,255,200,0.9)', description:'Hydrogen peroxide oxidizes HCl, releasing chlorine gas. This is a hazardous reaction in real life!' },
+    'h2o2+h2so4': { name:'Piranha Solution!', equation:'H₂O₂ + H₂SO₄ → piranha solution', color:'rgba(255,80,80,0.9)', description:'This creates piranha solution — an extremely powerful oxidizing mixture used in semiconductor cleaning.' },
+  };
+  const key = [a,b].sort().join('+');
+  return combos[key] || null;
+}
+
+function makeDraggable(el) {
+  let startX, startY, startLeft, startTop;
+  el.addEventListener('mousedown', e => {
+    if (e.target.tagName === 'TEXTAREA') return;
+    e.preventDefault();
+    startX = e.clientX; startY = e.clientY;
+    startLeft = parseInt(el.style.left) || 0;
+    startTop = parseInt(el.style.top) || 0;
+    el.style.zIndex = 100;
+
+    const onMove = ev => {
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      el.style.left = (startLeft + dx) + 'px';
+      el.style.top = (startTop + dy) + 'px';
+    };
+    const onUp = () => {
+      el.style.zIndex = 5;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  });
+}
+
+// ── REACTIONS ──
+function triggerReaction(el, def) {
+  // Gate: only proceed if this interaction matches the current step
+  const matched = checkInteractAction(def.id);
+
+  el.classList.add('reacting');
+  setTimeout(() => el.classList.remove('reacting'), 600);
+
+  const rect = el.getBoundingClientRect();
+  const labRect = labArea.getBoundingClientRect();
+  const cx = rect.left - labRect.left + rect.width / 2;
+  const cy = rect.top - labRect.top + rect.height / 2;
+
+  if (def.svgType === 'bunsen') {
+    spawnFlame(cx, cy - 40);
+    spawnSmoke(cx, cy - 60, 6);
+    if (!matched) showNotif('🔥 Bunsen Burner ignited! (not required yet)');
+  } else if (def.liquidColor) {
+    spawnBubbles(cx, cy, def.color);
+    spawnParticles(cx, cy, def.color);
+    colorFlash(el, def.color);
+    if (!matched) addAiMessage(`You interacted with ${def.name}. ${getReactionInfo(def.svgType)}`);
+  }
+}
+
+function spawnParticles(cx, cy, color) {
+  const overlay = document.getElementById('reactionOverlay');
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (i / 14) * Math.PI * 2;
+    const dist = 40 + Math.random() * 60;
+    p.style.cssText = `left:${cx}px;top:${cy}px;background:${color};
+      --tx:${Math.cos(angle) * dist}px;--ty:${Math.sin(angle) * dist}px;
+      opacity:1;animation-duration:${0.8 + Math.random() * 0.5}s;`;
+    overlay.appendChild(p);
+    setTimeout(() => p.remove(), 1500);
+  }
+}
+
+function spawnBubbles(cx, cy, color) {
+  const overlay = document.getElementById('reactionOverlay');
+  for (let i = 0; i < 8; i++) {
+    setTimeout(() => {
+      const b = document.createElement('div');
+      b.className = 'bubble';
+      const size = 6 + Math.random() * 12;
+      const ox = (Math.random() - 0.5) * 30;
+      b.style.cssText = `left:${cx + ox}px;top:${cy}px;width:${size}px;height:${size}px;
+        border:1px solid ${color};background:${color.replace('rgb', 'rgba').replace(')', ',0.2)')};`;
+      overlay.appendChild(b);
+      setTimeout(() => b.remove(), 1800);
+    }, i * 120);
+  }
+}
+
+function spawnFlame(cx, cy) {
+  const overlay = document.getElementById('reactionOverlay');
+  // Remove old flame
+  overlay.querySelectorAll('.flame').forEach(f => f.remove());
+  const flame = document.createElement('div');
+  flame.className = 'flame';
+  flame.style.cssText = `left:${cx - 15}px;top:${cy}px;`;
+  flame.innerHTML = `<svg width="30" height="50" viewBox="0 0 30 50">
+    <ellipse cx="15" cy="40" rx="10" ry="12" fill="#ff6600" opacity="0.9"/>
+    <ellipse cx="15" cy="28" rx="7" ry="15" fill="#ff9900" opacity="0.8"/>
+    <ellipse cx="15" cy="18" rx="4" ry="10" fill="#ffcc00" opacity="0.9"/>
+    <ellipse cx="15" cy="10" rx="2" ry="6" fill="#ffffaa" opacity="1"/>
+  </svg>`;
+  overlay.appendChild(flame);
+  spawnSmoke(cx, cy - 50, 3);
+  setTimeout(() => flame.remove(), 4000);
+}
+
+function spawnSmoke(cx, cy, count) {
+  const overlay = document.getElementById('reactionOverlay');
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const s = document.createElement('div');
+      s.className = 'smoke-particle';
+      const size = 20 + Math.random() * 30;
+      s.style.cssText = `left:${cx - size/2 + (Math.random()-0.5)*20}px;top:${cy}px;width:${size}px;height:${size}px;`;
+      overlay.appendChild(s);
+      setTimeout(() => s.remove(), 2200);
+    }, i * 300);
+  }
+}
+
+function colorFlash(el, color) {
+  el.style.filter = `drop-shadow(0 0 30px ${color})`;
+  setTimeout(() => { el.style.filter = ''; }, 600);
+}
+
+function getReactionInfo(type) {
+  const info = {
+    beaker: "The solution in the beaker is undergoing a chemical change. Notice the color shift indicating pH changes.",
+    testtube: "The test tube reaction shows a classic acid-base neutralization. The bubbles are CO₂ being released.",
+    flask: "Erlenmeyer flask reactions are ideal for titrations. The conical shape minimizes splashing.",
+    petri: "The Petri dish shows bacterial colony growth patterns under controlled conditions.",
+    pipette: "Precise dropwise addition is key in analytical chemistry. Each drop changes the concentration.",
+    roundflask: "Round-bottom flasks allow even heat distribution, perfect for distillation setups.",
+  };
+  return info[type] || "Observe the physical and chemical changes occurring in the apparatus.";
+}
+
+// ── EXPERIMENTS DATABASE ──
+// action types:
+//   { type:'place',  item:'equipId' or 'chemId' }   → drag item onto bench
+//   { type:'interact', item:'id' }                   → double-click item on bench
+//   { type:'combine', items:['id1','id2'] }          → double-click one while other is nearby
+//   { type:'observe' }                               → click the "Observe" button shown on bench
+//   { type:'record'  }                               → click the "Record" button shown on bench
+const experiments = {
+  'acid-base': {
+    name: 'Acid-Base Reaction',
+    setup: ['flask','hcl','naoh','pipette'],
+    steps: [
+      { text:'Place the Erlenmeyer flask on the bench',           action:{ type:'place',   item:'flask'         }, hint:'Drag the Flask from the tray', effect:'flask placed ✓' },
+      { text:'Add HCl (0.1M) solution into the flask',           action:{ type:'place',   item:'hcl'           }, hint:'Drag HCl onto the bench', effect:'HCl added to flask ✓' },
+      { text:'Add 3 drops of phenolphthalein indicator',         action:{ type:'interact',item:'pipette'       }, hint:'Place & double-click the Pipette', effect:'Indicator drops added ✓' },
+      { text:'Pour NaOH solution drop by drop into the flask',   action:{ type:'place',   item:'naoh'          }, hint:'Drag NaOH onto the bench', effect:'NaOH added ✓' },
+      { text:'Mix HCl + NaOH — watch for color change!',        action:{ type:'combine',  items:['hcl','naoh'] }, hint:'Double-click HCl while NaOH is nearby', effect:'NEUTRALIZATION! NaCl + H₂O formed 🌸' },
+      { text:'Observe the pink equivalence point',               action:{ type:'observe'                       }, hint:'Click the Observe button on the bench', effect:'Equivalence point recorded ✓' },
+      { text:'Record volume of NaOH used',                      action:{ type:'record'                        }, hint:'Click the Record button on the bench', effect:'Data recorded ✓' },
+    ]
+  },
+  'combustion': {
+    name: 'Combustion Study',
+    setup: ['bunsen','beaker','testtube'],
+    steps: [
+      { text:'Place the Bunsen burner on the bench',             action:{ type:'place',   item:'bunsen'        }, hint:'Drag Bunsen Burner from tray', effect:'Bunsen burner placed ✓' },
+      { text:'Place the beaker above the burner',                action:{ type:'place',   item:'beaker'        }, hint:'Drag Beaker from tray', effect:'Beaker positioned ✓' },
+      { text:'Ignite the Bunsen burner',                         action:{ type:'interact',item:'bunsen'        }, hint:'Double-click the Bunsen Burner', effect:'🔥 Burner ignited! Blue flame achieved ✓' },
+      { text:'Heat the beaker over the flame',                   action:{ type:'interact',item:'beaker'        }, hint:'Double-click the Beaker', effect:'Beaker heating — bubbles forming ✓' },
+      { text:'Add H₂O₂ to observe decomposition',               action:{ type:'place',   item:'h2o2'          }, hint:'Drag H₂O₂ from tray', effect:'H₂O₂ added ✓' },
+      { text:'Observe vigorous bubbling (O₂ released)',          action:{ type:'interact',item:'h2o2'          }, hint:'Double-click the H₂O₂ bottle', effect:'2H₂O₂ → 2H₂O + O₂↑ 💥' },
+      { text:'Record observations and calculate ratio',          action:{ type:'record'                        }, hint:'Click the Record button', effect:'Results recorded ✓' },
+    ]
+  },
+  'crystallize': {
+    name: 'Crystallization',
+    setup: ['roundflask','bunsen','beaker','petri'],
+    steps: [
+      { text:'Place the round flask on the bench',               action:{ type:'place',   item:'roundflask'    }, hint:'Drag Round Flask from tray', effect:'Round flask ready ✓' },
+      { text:'Place Bunsen burner under the flask',              action:{ type:'place',   item:'bunsen'        }, hint:'Drag Bunsen Burner from tray', effect:'Burner positioned ✓' },
+      { text:'Heat water to 80°C — ignite burner',               action:{ type:'interact',item:'bunsen'        }, hint:'Double-click the Bunsen Burner', effect:'🔥 Water heating to 80°C ✓' },
+      { text:'Add H₂SO₄ to simulate dissolving CuSO₄',          action:{ type:'place',   item:'h2so4'         }, hint:'Drag H₂SO₄ from tray', effect:'Saturated solution prepared ✓' },
+      { text:'Heat and stir the solution vigorously',            action:{ type:'interact',item:'h2so4'         }, hint:'Double-click the H₂SO₄ bottle', effect:'CuSO₄ fully dissolved ✓' },
+      { text:'Pour hot solution into Petri dish to cool',        action:{ type:'place',   item:'petri'         }, hint:'Drag Petri Dish from tray', effect:'Solution transferred ✓' },
+      { text:'Observe crystal formation as it cools',            action:{ type:'observe'                       }, hint:'Click the Observe button', effect:'💎 Beautiful blue crystals forming! ✓' },
+    ]
+  },
+  'titration': {
+    name: 'Titration',
+    setup: ['flask','naoh','hcl','pipette'],
+    steps: [
+      { text:'Place the conical flask on the bench',             action:{ type:'place',   item:'flask'         }, hint:'Drag Flask from tray', effect:'Flask ready ✓' },
+      { text:'Add HCl (unknown acid) to the flask',              action:{ type:'place',   item:'hcl'           }, hint:'Drag HCl from tray', effect:'25mL HCl pipetted ✓' },
+      { text:'Add methyl orange indicator via pipette',          action:{ type:'interact',item:'pipette'       }, hint:'Place & double-click the Pipette', effect:'Indicator added — solution turns red ✓' },
+      { text:'Fill burette with NaOH standard solution',         action:{ type:'place',   item:'naoh'          }, hint:'Drag NaOH onto the bench', effect:'Burette filled to 0.00mL ✓' },
+      { text:'Add NaOH drop by drop — titrate slowly',          action:{ type:'interact',item:'naoh'          }, hint:'Double-click the NaOH bottle', effect:'Titration in progress… ✓' },
+      { text:'Reach endpoint — HCl + NaOH neutralize!',         action:{ type:'combine',  items:['hcl','naoh'] }, hint:'Double-click NaOH while HCl is nearby', effect:'🟠 Endpoint! Yellow→Orange color change ✓' },
+      { text:'Record final burette reading',                     action:{ type:'record'                        }, hint:'Click the Record button', effect:'Concentration calculated ✓' },
+    ]
+  },
+  'optics': {
+    name: 'Optics & Prism',
+    setup: ['microscope','petri'],
+    steps: [
+      { text:'Place microscope (light source) on bench',         action:{ type:'place',   item:'microscope'    }, hint:'Drag Microscope from tray', effect:'Light source set up ✓' },
+      { text:'Place petri dish as prism stand',                  action:{ type:'place',   item:'petri'         }, hint:'Drag Petri Dish from tray', effect:'Prism positioned ✓' },
+      { text:'Activate the light source',                        action:{ type:'interact',item:'microscope'    }, hint:'Double-click the Microscope', effect:'💡 White light beam activated ✓' },
+      { text:'Add H₂O₂ to dish — observe refraction',           action:{ type:'place',   item:'h2o2'          }, hint:'Drag H₂O₂ from tray', effect:'Refractive medium prepared ✓' },
+      { text:'Observe spectrum dispersion in the dish',          action:{ type:'interact',item:'h2o2'          }, hint:'Double-click the H₂O₂ dish', effect:'🌈 Spectrum visible: 400–700nm ✓' },
+      { text:'Record wavelengths of each colour band',           action:{ type:'record'                        }, hint:'Click the Record button', effect:'Wavelength data logged ✓' },
+    ]
+  },
+  'pendulum': {
+    name: 'Pendulum Motion',
+    setup: ['beaker','testtube'],
+    steps: [
+      { text:'Set up the stand — place beaker as base weight',   action:{ type:'place',   item:'beaker'        }, hint:'Drag Beaker from tray', effect:'Stand base placed ✓' },
+      { text:'Attach test tube as pendulum bob',                 action:{ type:'place',   item:'testtube'      }, hint:'Drag Test Tube from tray', effect:'Bob attached (L = 1.0m) ✓' },
+      { text:'Displace bob to 10° from vertical',                action:{ type:'interact',item:'testtube'      }, hint:'Double-click the Test Tube', effect:'Bob displaced 10° ✓' },
+      { text:'Release bob and start timing',                     action:{ type:'observe'                       }, hint:'Click the Observe button', effect:'⏱ Timing started — oscillating ✓' },
+      { text:'Count 20 complete oscillations',                   action:{ type:'interact',item:'beaker'        }, hint:'Double-click the Beaker (stopwatch)', effect:'20 oscillations counted ✓' },
+      { text:'Calculate T = time ÷ 20',                          action:{ type:'record'                        }, hint:'Click the Record button', effect:'T = 2.01s  |  g = 9.81 m/s² ✓' },
+    ]
+  },
+  'density': {
+    name: 'Density Study',
+    setup: ['beaker','roundflask','testtube','h2so4','h2o2','naoh'],
+    steps: [
+      { text:'Place the large beaker on the bench',              action:{ type:'place',   item:'beaker'        }, hint:'Drag Beaker from tray', effect:'Measurement beaker ready ✓' },
+      { text:'Add first liquid — H₂SO₄ (densest)',               action:{ type:'place',   item:'h2so4'         }, hint:'Drag H₂SO₄ from tray', effect:'H₂SO₄ layer added (ρ = 1.84 g/mL) ✓' },
+      { text:'Add second liquid — NaOH solution',                action:{ type:'place',   item:'naoh'          }, hint:'Drag NaOH from tray', effect:'NaOH layer added (ρ = 1.04 g/mL) ✓' },
+      { text:'Add third liquid — H₂O₂ (lightest)',               action:{ type:'place',   item:'h2o2'          }, hint:'Drag H₂O₂ from tray', effect:'H₂O₂ layer added (ρ = 1.01 g/mL) ✓' },
+      { text:'Observe the distinct density layers',              action:{ type:'observe'                       }, hint:'Click the Observe button', effect:'3 distinct layers visible ✓' },
+      { text:'Record densities: ρ = mass ÷ volume',             action:{ type:'record'                        }, hint:'Click the Record button', effect:'Density column data saved ✓' },
+    ]
+  },
+};
+
+// ── ACTIVE EXPERIMENT STATE ──
+let activeExpKey = 'acid-base';
+let currentStepDefs = [];   // full step objects with actions
+let currentSteps = [];      // just the text strings (for edits)
+let currentStepIdx = 0;
+let autoCompleteTimer = null;
+
+function loadExperiment(key) {
+  document.querySelectorAll('.exp-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.exp === key));
+  const exp = experiments[key];
+  if (!exp) return;
+  activeExpKey = key;
+  currentStepDefs = exp.steps;
+  currentSteps = exp.steps.map(s => s.text);
+  currentStepIdx = 0;
+
+  // Clear bench
+  document.querySelectorAll('.lab-item, .lab-chem').forEach(el => el.remove());
+  // Clear bench overlays
+  document.getElementById('reactionOverlay').innerHTML = '';
+  removeBenchButtons();
+
+  document.getElementById('procExpName').textContent = exp.name;
+  renderSteps(currentSteps);
+
+  const firstHint = exp.steps[0]?.hint || '';
+  addAiMessage(`🔬 Experiment loaded: <b>${exp.name}</b>. Follow each step in order. Step 1 hint: <i>${firstHint}</i>`);
+  showNotif(`Loaded: ${exp.name}`);
+}
+
+// ── ACTION ENGINE ──
+function getRequiredAction() {
+  if (currentStepIdx >= currentStepDefs.length) return null;
+  return currentStepDefs[currentStepIdx]?.action || null;
+}
+
+function getStepEffect() {
+  return currentStepDefs[currentStepIdx]?.effect || '✓ Done';
+}
+
+function getStepHint() {
+  return currentStepDefs[currentStepIdx]?.hint || '';
+}
+
+// Called whenever user places an item on the bench
+function checkPlaceAction(itemId) {
+  const action = getRequiredAction();
+  if (!action) return false;
+  if (action.type === 'place' && action.item === itemId) {
+    triggerStepSuccess(getStepEffect());
+    return true;
+  }
+  // Wrong item placed — give hint
+  if (action.type === 'place') {
+    showNotif(`⚠ Wrong item! ${getStepHint()}`);
+    addAiMessage(`Not quite! ${getStepHint()} for Step ${currentStepIdx + 1}.`);
+  }
+  return false;
+}
+
+// Called when user double-clicks an equipment item
+function checkInteractAction(itemId) {
+  const action = getRequiredAction();
+  if (!action) return false;
+  if (action.type === 'interact' && action.item === itemId) {
+    triggerStepSuccess(getStepEffect());
+    return true;
+  }
+  if (action.type === 'observe' || action.type === 'record') {
+    showNotif(`⚠ Use the bench button! ${getStepHint()}`);
+    return false;
+  }
+  showNotif(`⚠ ${getStepHint()}`);
+  return false;
+}
+
+// Called when two chemicals are combined
+function checkCombineAction(idA, idB) {
+  const action = getRequiredAction();
+  if (!action) return false;
+  if (action.type === 'combine') {
+    const sorted = [idA, idB].sort().join('+');
+    const required = [...action.items].sort().join('+');
+    if (sorted === required) {
+      triggerStepSuccess(getStepEffect());
+      return true;
+    }
+  }
+  return false;
+}
+
+// Called when observe/record bench buttons are clicked
+function checkBenchButtonAction(type) {
+  const action = getRequiredAction();
+  if (!action) return;
+  if (action.type === type) {
+    if (type === 'record') {
+      // Open the record table THEN complete the step
+      openRecord();
+      setTimeout(() => triggerStepSuccess(getStepEffect()), 400);
+    } else {
+      triggerStepSuccess(getStepEffect());
+    }
+  } else {
+    showNotif(`⚠ ${getStepHint()}`);
+    addAiMessage(`Not this step yet! ${getStepHint()}`);
+  }
+}
+
+function triggerStepSuccess(effectMsg) {
+  const i = currentStepIdx;
+  showNotif(`✅ ${effectMsg}`);
+  addAiMessage(`✅ <b>Step ${i + 1} complete!</b> ${effectMsg}`);
+  // Apply color change for this step if defined
+  applyColorChange(activeExpKey, i);
+  // Show next hint
+  const nextStep = currentStepDefs[i + 1];
+  if (nextStep) {
+    setTimeout(() => addAiMessage(`▶ Next: <i>${nextStep.hint}</i>`), 600);
+  }
+  autoCompleteStep(i, 1200);
+  // Show/hide bench action buttons based on next step
+  setTimeout(() => updateBenchButtons(), 1400);
+}
+
+// ── BENCH ACTION BUTTONS (Observe / Record) ──
+function removeBenchButtons() {
+  document.querySelectorAll('.bench-action-btn').forEach(b => b.remove());
+}
+
+function updateBenchButtons() {
+  removeBenchButtons();
+  const action = getRequiredAction();
+  if (!action) return;
+  if (action.type === 'observe' || action.type === 'record') {
+    spawnBenchButton(action.type);
+  }
+}
+
+function spawnBenchButton(type) {
+  const labArea = document.getElementById('labArea');
+  const btn = document.createElement('button');
+  btn.className = 'bench-action-btn';
+  btn.dataset.btype = type;
+  const isObserve = type === 'observe';
+  btn.innerHTML = isObserve ? '👁 OBSERVE' : '📋 RECORD';
+  btn.style.cssText = `
+    position:absolute;
+    left:50%; top:150px;
+    transform:translateX(-50%);
+    background:${isObserve ? 'rgba(0,229,255,0.15)' : 'rgba(255,179,0,0.15)'};
+    border:2px solid ${isObserve ? 'var(--accent-cyan)' : 'var(--accent-amber)'};
+    color:${isObserve ? 'var(--accent-cyan)' : 'var(--accent-amber)'};
+    border-radius:8px; padding:10px 28px;
+    font-family:'Orbitron',sans-serif; font-size:13px; letter-spacing:2px;
+    cursor:pointer; z-index:200;
+    box-shadow:0 0 20px ${isObserve ? 'rgba(0,229,255,0.3)' : 'rgba(255,179,0,0.3)'};
+    animation:benchBtnPulse 1.5s ease-in-out infinite;
+  `;
+  btn.onclick = () => {
+    checkBenchButtonAction(type);
+    btn.remove();
+  };
+  labArea.appendChild(btn);
+}
+
+// ── PROCEDURE STEPS RENDERER ──
+function renderSteps(steps) {
+  currentSteps = [...steps];
+  const container = document.getElementById('procSteps');
+  container.innerHTML = '';
+
+  steps.forEach((step, i) => {
+    const stepDef = currentStepDefs[i];
+    const actionTag = stepDef ? getActionTag(stepDef.action) : '';
+    const div = document.createElement('div');
+    div.className = 'proc-step' + (i === 0 ? ' current' : '');
+    div.id = `step-${i}`;
+    div.innerHTML = `
+      <div class="step-num">
+        <div class="step-badge" id="badge-${i}">${i+1}</div>
+        STEP ${i+1}
+        ${actionTag}
+        <span class="completing-label" id="clabel-${i}" style="display:none;color:var(--accent-amber);font-size:8px;margin-left:auto;">● completing…</span>
+      </div>
+      <div class="step-progress"><div class="step-progress-bar" id="prog-${i}"></div></div>
+      <textarea class="step-text" id="step-text-${i}">${step}</textarea>
+      <div class="step-hint" id="hint-${i}">${stepDef?.hint || ''}</div>
+      <div class="step-actions">
+        <button class="step-btn done-btn" onclick="markDone(${i})">✓ Done</button>
+        <button class="step-btn" onclick="deleteStep(${i})">✕</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  const addBtn = document.createElement('div');
+  addBtn.className = 'add-step-btn';
+  addBtn.innerHTML = `<span>+</span><span>ADD STEP</span>`;
+  addBtn.onclick = addStep;
+  container.appendChild(addBtn);
+
+  // After render, check if first step needs a bench button
+  updateBenchButtons();
+}
+
+function getActionTag(action) {
+  if (!action) return '';
+  const tags = {
+    place:    `<span class="action-tag place-tag">DRAG</span>`,
+    interact: `<span class="action-tag interact-tag">DBL-CLICK</span>`,
+    combine:  `<span class="action-tag combine-tag">COMBINE</span>`,
+    observe:  `<span class="action-tag observe-tag">OBSERVE</span>`,
+    record:   `<span class="action-tag record-tag">RECORD</span>`,
+  };
+  return tags[action.type] || '';
+}
+
+function markDone(i) {
+  const step = document.getElementById(`step-${i}`);
+  if (!step || step.classList.contains('done')) return;
+  clearTimeout(autoCompleteTimer);
+  const bar = document.getElementById(`prog-${i}`);
+  if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; }
+  step.classList.remove('completing', 'current');
+  step.classList.add('done');
+  const clabel = document.getElementById(`clabel-${i}`);
+  if (clabel) clabel.style.display = 'none';
+  const ta = document.getElementById(`step-text-${i}`);
+  if (ta) currentSteps[i] = ta.value;
+  currentStepIdx = i + 1;
+  const next = document.getElementById(`step-${currentStepIdx}`);
+  if (next) {
+    next.classList.add('current');
+    next.classList.remove('done', 'completing');
+    next.scrollIntoView({ behavior:'smooth', inline:'nearest', block:'nearest' });
+    updateBenchButtons();
+  } else {
+    showNotif('🎉 All steps complete! Experiment finished!');
+    addAiMessage("🏆 Excellent work! You've completed all procedure steps. Review your observations and record your conclusions. Outstanding science!");
+    removeBenchButtons();
+    return;
+  }
+  showNotif(`✓ Step ${i+1} done → Step ${i+2} active`);
+}
+
+function autoCompleteStep(i, duration = 1400) {
+  const step = document.getElementById(`step-${i}`);
+  if (!step || step.classList.contains('done')) return;
+  step.classList.add('completing');
+  step.classList.remove('current');
+  const clabel = document.getElementById(`clabel-${i}`);
+  if (clabel) clabel.style.display = 'inline';
+  const bar = document.getElementById(`prog-${i}`);
+  if (bar) {
+    bar.style.transition = 'none'; bar.style.width = '0%';
+    bar.getBoundingClientRect();
+    bar.style.transition = `width ${duration}ms linear`;
+    bar.style.width = '100%';
+  }
+  clearTimeout(autoCompleteTimer);
+  autoCompleteTimer = setTimeout(() => markDone(i), duration);
+}
+
+function deleteStep(i) {
+  currentSteps.splice(i, 1);
+  currentStepDefs.splice(i, 1);
+  renderSteps(currentSteps);
+}
+
+function addStep() {
+  currentSteps.push('New step — click to edit');
+  currentStepDefs.push({ text:'New step', action:{ type:'observe' }, hint:'Custom step' });
+  renderSteps(currentSteps);
+  const container = document.getElementById('procSteps');
+  container.scrollLeft = container.scrollWidth;
+  const newTa = document.getElementById(`step-text-${currentSteps.length - 1}`);
+  if (newTa) { newTa.focus(); newTa.select(); }
+}
+
+// Load initial experiment
+loadExperiment('acid-base');
+
+// ── COLOR CHANGE ENGINE ──
+// Maps experiment key + step index → { targetId, fromColor, toColor, label }
+const colorChanges = {
+  'acid-base': {
+    2: { targetId:'flask', from:'rgba(178,75,255,0.5)', to:'rgba(255,80,80,0.55)', label:'Phenolphthalein added → solution turns colourless/red' },
+    4: { targetId:'flask', from:'rgba(255,80,80,0.55)', to:'rgba(255,100,180,0.7)', label:'NEUTRALIZATION! → Faint PINK at equivalence point 🌸' },
+  },
+  'combustion': {
+    3: { targetId:'beaker', from:'rgba(0,150,255,0.6)', to:'rgba(255,140,0,0.5)', label:'Beaker heating → liquid temperature rising 🔥' },
+    5: { targetId:'beaker', from:'rgba(255,140,0,0.5)', to:'rgba(255,255,200,0.6)', label:'Decomposition — O₂ released, solution clarifies 💨' },
+  },
+  'crystallize': {
+    3: { targetId:'roundflask', from:'rgba(255,215,0,0.5)', to:'rgba(30,144,255,0.55)', label:'CuSO₄ dissolving → deep BLUE saturated solution' },
+    6: { targetId:'petri', from:'rgba(0,229,255,0.3)', to:'rgba(30,100,255,0.5)', label:'💎 Crystals forming — vivid BLUE cubic CuSO₄ crystals!' },
+  },
+  'titration': {
+    2: { targetId:'flask', from:'rgba(178,75,255,0.5)', to:'rgba(255,60,60,0.6)', label:'Methyl orange added → solution turns RED (acidic)' },
+    5: { targetId:'flask', from:'rgba(255,60,60,0.6)', to:'rgba(255,165,0,0.65)', label:'Approaching endpoint → turning ORANGE' },
+    5.5:{ targetId:'flask', from:'rgba(255,165,0,0.65)', to:'rgba(255,200,50,0.65)', label:'🟠 ENDPOINT REACHED! Yellow-orange colour change ✓' },
+  },
+  'optics': {
+    4: { targetId:'petri', from:'rgba(0,229,255,0.3)', to:'rgba(255,255,255,0.15)', label:'🌈 White light dispersing into full spectrum!' },
+  },
+  'density': {
+    1: { targetId:'beaker', from:'rgba(0,150,255,0.6)', to:'rgba(240,220,60,0.7)', label:'Layer 1: H₂SO₄ — YELLOW (ρ = 1.84 g/mL, bottom)' },
+    2: { targetId:'beaker', from:'rgba(240,220,60,0.7)', to:'rgba(100,220,120,0.65)', label:'Layer 2: NaOH — GREEN (ρ = 1.04 g/mL, middle)' },
+    3: { targetId:'beaker', from:'rgba(100,220,120,0.65)', to:'rgba(180,220,255,0.55)', label:'Layer 3: H₂O₂ — PALE BLUE (ρ = 1.01 g/mL, top)' },
+  },
+};
+
+function applyColorChange(expKey, stepIdx) {
+  const map = colorChanges[expKey];
+  if (!map) return;
+  const change = map[stepIdx] ?? map[stepIdx + 0.5] ?? null;
+  if (!change) return;
+
+  // Find target element on bench
+  const targetEl = document.querySelector(`.lab-item[data-id="${change.targetId}"]`);
+  if (!targetEl) return;
+
+  // Find all <rect> and <polygon> and <ellipse> fill elements that look like liquid
+  const liquidEls = targetEl.querySelectorAll('rect, polygon, ellipse, g');
+  let changed = false;
+  liquidEls.forEach(el => {
+    const fill = el.getAttribute('fill') || '';
+    // Only recolor semi-transparent fills (the liquid layers)
+    if (fill.startsWith('rgba') && !fill.includes('0.06') && !fill.includes('0.04') && !fill.includes('0.03') && !fill.includes('0.02')) {
+      el.setAttribute('fill', change.to);
+      el.classList.add('liquid-changing');
+      setTimeout(() => el.classList.remove('liquid-changing'), 1500);
+      changed = true;
+    }
+  });
+
+  if (changed) showColorChangeBanner(change.from, change.to, change.label);
+}
+
+let colorBannerTimer = null;
+function showColorChangeBanner(fromColor, toColor, label) {
+  const el = document.getElementById('colorChangeLabel');
+  el.innerHTML = `
+    <span class="ccl-swatch" style="background:${fromColor}"></span>
+    <span style="color:var(--text-dim)">→</span>
+    <span class="ccl-swatch" style="background:${toColor}"></span>
+    <span>${label}</span>
+  `;
+  el.classList.add('visible');
+  clearTimeout(colorBannerTimer);
+  colorBannerTimer = setTimeout(() => el.classList.remove('visible'), 4000);
+}
+
+// ── RECORD DATA ──
+const recordData = {
+  'acid-base': () => `
+    <p class="record-section-title">Observations</p>
+    <div class="record-obs-box">
+      Solution started <b>colourless</b> with HCl. After adding phenolphthalein indicator, it remained colourless.
+      As NaOH was added drop by drop, a faint <b>pink colour</b> appeared at the equivalence point — confirming complete neutralisation.
+      Equation: <b>HCl + NaOH → NaCl + H₂O</b>
+    </div>
+    <p class="record-section-title">Titration Data</p>
+    <table class="record-table">
+      <tr><th>Parameter</th><th>Value</th></tr>
+      <tr><td class="label">Volume of HCl (analyte)</td><td class="val">25.00 mL</td></tr>
+      <tr><td class="label">Concentration of HCl (known)</td><td class="val">0.100 M</td></tr>
+      <tr><td class="label">Initial burette reading (NaOH)</td><td class="val">0.00 mL</td></tr>
+      <tr><td class="label">Final burette reading (NaOH)</td><td class="val">25.10 mL</td></tr>
+      <tr><td class="label">Volume of NaOH used</td><td class="val">25.10 mL</td></tr>
+      <tr><td class="label">Indicator</td><td class="val">Phenolphthalein</td></tr>
+      <tr><td class="label">Endpoint colour</td><td class="val"><span class="ccl-swatch" style="background:rgba(255,100,180,0.8);vertical-align:middle;margin-right:6px;display:inline-block"></span>Faint pink (permanent)</td></tr>
+    </table>
+    <p class="record-section-title">Calculation</p>
+    <table class="record-table">
+      <tr><th>Formula</th><th>Result</th></tr>
+      <tr><td class="label">Moles HCl = C × V = 0.100 × 0.025</td><td class="val">0.0025 mol</td></tr>
+      <tr><td class="label">Moles NaOH = Moles HCl (1:1 ratio)</td><td class="val">0.0025 mol</td></tr>
+      <tr><td class="label">C(NaOH) = n ÷ V = 0.0025 ÷ 0.0251</td><td class="val">0.0996 M</td></tr>
+    </table>
+    <div class="record-result-box">
+      <div class="result-label">Calculated NaOH Concentration</div>
+      <div class="result-val">0.0996 mol/L ≈ 0.100 M  ✓</div>
+    </div>`,
+
+  'combustion': () => `
+    <p class="record-section-title">Observations</p>
+    <div class="record-obs-box">
+      Bunsen burner produced a <b>blue flame</b> (complete combustion) at ~1000°C.
+      H₂O₂ decomposed vigorously with visible <b>oxygen bubbles</b> and heat released.
+      Reaction: <b>2H₂O₂ → 2H₂O + O₂↑</b>
+    </div>
+    <p class="record-section-title">Measurements</p>
+    <table class="record-table">
+      <tr><th>Parameter</th><th>Value</th></tr>
+      <tr><td class="label">Initial mass of H₂O₂ solution</td><td class="val">10.20 g</td></tr>
+      <tr><td class="label">Volume of O₂ collected</td><td class="val">118 mL</td></tr>
+      <tr><td class="label">Temperature</td><td class="val">22°C (295 K)</td></tr>
+      <tr><td class="label">Pressure</td><td class="val">101.3 kPa</td></tr>
+      <tr><td class="label">Flame colour</td><td class="val"><span class="ccl-swatch" style="background:#1E90FF;vertical-align:middle;margin-right:6px;display:inline-block"></span>Blue (complete)</td></tr>
+      <tr><td class="label">Reaction type</td><td class="val">Exothermic decomposition</td></tr>
+    </table>
+    <p class="record-section-title">Calculation</p>
+    <table class="record-table">
+      <tr><th>Step</th><th>Result</th></tr>
+      <tr><td class="label">n(O₂) = PV/RT = (101300 × 0.000118) / (8.314 × 295)</td><td class="val">0.00487 mol</td></tr>
+      <tr><td class="label">n(H₂O₂) = 2 × n(O₂)</td><td class="val">0.00974 mol</td></tr>
+      <tr><td class="label">Molar mass H₂O₂ = 34.01 g/mol</td><td class="val">—</td></tr>
+      <tr><td class="label">Mass H₂O₂ = 0.00974 × 34.01</td><td class="val">0.331 g</td></tr>
+    </table>
+    <div class="record-result-box">
+      <div class="result-label">% H₂O₂ in solution</div>
+      <div class="result-val">0.331 / 10.20 × 100 = 3.25%</div>
+    </div>`,
+
+  'crystallize': () => `
+    <p class="record-section-title">Observations</p>
+    <div class="record-obs-box">
+      CuSO₄ dissolved in hot water produced a <b>deep blue saturated solution</b>.
+      On slow cooling, large <b>blue monoclinic crystals</b> formed around seed crystal.
+      Chemical formula of crystals: <b>CuSO₄·5H₂O</b> (copper sulphate pentahydrate)
+    </div>
+    <p class="record-section-title">Crystallisation Data</p>
+    <table class="record-table">
+      <tr><th>Parameter</th><th>Value</th></tr>
+      <tr><td class="label">Volume of water used</td><td class="val">50.0 mL</td></tr>
+      <tr><td class="label">Temperature of dissolution</td><td class="val">80°C</td></tr>
+      <tr><td class="label">Mass of CuSO₄ dissolved</td><td class="val">21.4 g</td></tr>
+      <tr><td class="label">Cooling temperature</td><td class="val">25°C (room temp)</td></tr>
+      <tr><td class="label">Solubility at 25°C</td><td class="val">20.7 g / 100 mL</td></tr>
+      <tr><td class="label">Crystal colour</td><td class="val"><span class="ccl-swatch" style="background:#1E75CC;vertical-align:middle;margin-right:6px;display:inline-block"></span>Vivid blue</td></tr>
+      <tr><td class="label">Crystal system</td><td class="val">Triclinic</td></tr>
+    </table>
+    <div class="record-result-box">
+      <div class="result-label">Expected crystal yield</div>
+      <div class="result-val">≈ 1.74 g CuSO₄·5H₂O  (mass excess × hydration factor)</div>
+    </div>`,
+
+  'titration': () => `
+    <p class="record-section-title">Observations</p>
+    <div class="record-obs-box">
+      Flask started <b>red</b> with methyl orange in acid.
+      As NaOH was added, colour shifted through <b>orange</b> to a permanent <b>yellow-orange</b> endpoint.
+      This confirms the acid was fully neutralised. Equation: <b>HCl + NaOH → NaCl + H₂O</b>
+    </div>
+    <p class="record-section-title">Titration Readings</p>
+    <table class="record-table">
+      <tr><th>Trial</th><th>Initial (mL)</th><th>Final (mL)</th><th>Volume Used</th></tr>
+      <tr><td class="label">Rough</td><td class="val">0.00</td><td class="val">25.85</td><td class="val">25.85</td></tr>
+      <tr><td class="label">Trial 1</td><td class="val">0.00</td><td class="val">25.10</td><td class="val">25.10</td></tr>
+      <tr><td class="label">Trial 2</td><td class="val">0.00</td><td class="val">25.15</td><td class="val">25.15</td></tr>
+      <tr><td class="label">Trial 3</td><td class="val">0.00</td><td class="val">25.05</td><td class="val">25.05</td></tr>
+      <tr><td class="label"><b>Mean (concordant)</b></td><td></td><td></td><td class="val"><b>25.10 mL</b></td></tr>
+    </table>
+    <div class="record-result-box">
+      <div class="result-label">Concentration of Unknown Acid</div>
+      <div class="result-val">C = (0.1 × 25.10) / 25.00 = 0.1004 mol/L</div>
+    </div>`,
+
+  'optics': () => `
+    <p class="record-section-title">Observations</p>
+    <div class="record-obs-box">
+      White light dispersed through the refractive medium into a visible <b>ROYGBIV spectrum</b>.
+      Each colour corresponds to a different wavelength. Red bends least; violet bends most (highest refraction index).
+    </div>
+    <p class="record-section-title">Wavelength Measurements</p>
+    <table class="record-table">
+      <tr><th>Colour</th><th>Wavelength (nm)</th><th>Refractive Index (n)</th><th>Observed</th></tr>
+      <tr><td class="label">Violet</td><td class="val">400–450</td><td class="val">1.532</td><td><span class="ccl-swatch" style="background:#8B00FF;vertical-align:middle;margin-right:4px;display:inline-block"></span>✓</td></tr>
+      <tr><td class="label">Blue</td><td class="val">450–495</td><td class="val">1.528</td><td><span class="ccl-swatch" style="background:#0000FF;vertical-align:middle;margin-right:4px;display:inline-block"></span>✓</td></tr>
+      <tr><td class="label">Green</td><td class="val">495–570</td><td class="val">1.522</td><td><span class="ccl-swatch" style="background:#00CC00;vertical-align:middle;margin-right:4px;display:inline-block"></span>✓</td></tr>
+      <tr><td class="label">Yellow</td><td class="val">570–590</td><td class="val">1.519</td><td><span class="ccl-swatch" style="background:#FFEE00;vertical-align:middle;margin-right:4px;display:inline-block"></span>✓</td></tr>
+      <tr><td class="label">Orange</td><td class="val">590–620</td><td class="val">1.516</td><td><span class="ccl-swatch" style="background:#FF8800;vertical-align:middle;margin-right:4px;display:inline-block"></span>✓</td></tr>
+      <tr><td class="label">Red</td><td class="val">620–700</td><td class="val">1.513</td><td><span class="ccl-swatch" style="background:#FF0000;vertical-align:middle;margin-right:4px;display:inline-block"></span>✓</td></tr>
+    </table>
+    <div class="record-result-box">
+      <div class="result-label">Angle of Deviation (apex angle 60°)</div>
+      <div class="result-val">δ = 48.6° (red) → 52.4° (violet) — Dispersion Δδ = 3.8°</div>
+    </div>`,
+
+  'pendulum': () => `
+    <p class="record-section-title">Observations</p>
+    <div class="record-obs-box">
+      Pendulum oscillated with consistent period regardless of amplitude (for small angles).
+      Period depends only on length and gravity — <b>not mass</b>.
+      Formula: <b>T = 2π√(L/g)</b>
+    </div>
+    <p class="record-section-title">Raw Timing Data</p>
+    <table class="record-table">
+      <tr><th>Trial</th><th>Length L (m)</th><th>20 Oscillations (s)</th><th>Period T (s)</th></tr>
+      <tr><td class="label">1</td><td class="val">1.000</td><td class="val">40.25</td><td class="val">2.013</td></tr>
+      <tr><td class="label">2</td><td class="val">1.000</td><td class="val">40.18</td><td class="val">2.009</td></tr>
+      <tr><td class="label">3</td><td class="val">1.000</td><td class="val">40.20</td><td class="val">2.010</td></tr>
+      <tr><td class="label"><b>Mean</b></td><td class="val">1.000</td><td class="val">40.21</td><td class="val"><b>2.011 s</b></td></tr>
+    </table>
+    <p class="record-section-title">Calculation of g</p>
+    <table class="record-table">
+      <tr><th>Formula</th><th>Value</th></tr>
+      <tr><td class="label">T = 2π√(L/g)  →  g = 4π²L / T²</td><td class="val">—</td></tr>
+      <tr><td class="label">g = 4π² × 1.000 / (2.011)²</td><td class="val">9.786 m/s²</td></tr>
+      <tr><td class="label">Accepted value of g</td><td class="val">9.810 m/s²</td></tr>
+      <tr><td class="label">Percentage error</td><td class="val">0.24%</td></tr>
+    </table>
+    <div class="record-result-box">
+      <div class="result-label">Experimental value of gravitational acceleration</div>
+      <div class="result-val">g = 9.786 m/s²  (error: 0.24%)</div>
+    </div>`,
+
+  'density': () => `
+    <p class="record-section-title">Observations</p>
+    <div class="record-obs-box">
+      Three distinct liquid layers formed without mixing.
+      <b>H₂SO₄</b> (yellow, densest) settled to the bottom, <b>NaOH</b> (green) in the middle, and <b>H₂O₂</b> (pale blue, lightest) floated on top.
+      This demonstrates Archimedes' principle of density stratification.
+    </div>
+    <p class="record-section-title">Density Measurements</p>
+    <table class="record-table">
+      <tr><th>Liquid</th><th>Mass (g)</th><th>Volume (mL)</th><th>Density (g/mL)</th><th>Layer</th></tr>
+      <tr><td class="label"><span class="ccl-swatch" style="background:rgba(240,220,60,0.9);vertical-align:middle;margin-right:4px;display:inline-block"></span>H₂SO₄</td><td class="val">92.0</td><td class="val">50.0</td><td class="val">1.840</td><td class="val">Bottom</td></tr>
+      <tr><td class="label"><span class="ccl-swatch" style="background:rgba(100,220,120,0.9);vertical-align:middle;margin-right:4px;display:inline-block"></span>NaOH (aq)</td><td class="val">52.0</td><td class="val">50.0</td><td class="val">1.040</td><td class="val">Middle</td></tr>
+      <tr><td class="label"><span class="ccl-swatch" style="background:rgba(180,220,255,0.9);vertical-align:middle;margin-right:4px;display:inline-block"></span>H₂O₂ (3%)</td><td class="val">50.5</td><td class="val">50.0</td><td class="val">1.010</td><td class="val">Top</td></tr>
+    </table>
+    <div class="record-result-box">
+      <div class="result-label">Density difference (bottom vs top)</div>
+      <div class="result-val">Δρ = 1.840 − 1.010 = 0.830 g/mL — clear stratification ✓</div>
+    </div>`,
+};
+
+function openRecord() {
+  const exp = experiments[activeExpKey];
+  if (!exp) return;
+  const modal = document.getElementById('recordModal');
+  document.getElementById('recordExpName').textContent = exp.name;
+  const bodyFn = recordData[activeExpKey];
+  document.getElementById('recordBody').innerHTML = bodyFn ? bodyFn() : '<p style="color:var(--text-dim)">No data available.</p>';
+  document.getElementById('recordTimestamp').textContent =
+    'Recorded: ' + new Date().toLocaleString();
+  modal.classList.add('open');
+}
+
+function closeRecord() {
+  document.getElementById('recordModal').classList.remove('open');
+}
+
+// Close on backdrop click
+document.getElementById('recordModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeRecord();
+});
+
+const aiResponses = {
+  keywords: [
+    { keys: ['acid','base','ph','neutrali'], resp: "Acid-base reactions involve the transfer of protons (H⁺). When a strong acid like HCl meets NaOH, they neutralize completely: HCl + NaOH → NaCl + H₂O. The equivalence point is where moles of acid equal moles of base." },
+    { keys: ['combustion','fire','burn','flame','bunsen'], resp: "Combustion is a rapid chemical reaction with oxygen that produces heat and light. Complete combustion of hydrocarbons produces CO₂ and H₂O. The Bunsen burner uses natural gas (methane): CH₄ + 2O₂ → CO₂ + 2H₂O." },
+    { keys: ['crystal','crystalliz','precipitat'], resp: "Crystallization is a purification technique where a substance forms a crystal lattice from a solution. The key is controlled, slow cooling — rapid cooling produces small impure crystals while slow cooling gives large, pure ones." },
+    { keys: ['titrat','burette','endpoint','indicator'], resp: "Titration is an analytical technique to determine concentration. The endpoint is marked by indicator color change. For acid-base: moles of acid = moles of base at equivalence. Concentration = (V₁ × C₁) / V₂." },
+    { keys: ['density','layer','float','sink'], resp: "Density = mass/volume (g/mL or g/cm³). Less dense liquids float on denser ones. Water: 1.0, oil: 0.9, honey: 1.4 g/mL. This explains why oil floats on water!" },
+    { keys: ['beaker','flask','test tube','glassware'], resp: "Lab glassware is calibrated for precision. Beakers are for mixing, Erlenmeyer flasks minimize evaporation, test tubes for small reactions, and volumetric flasks for precise solution preparation." },
+    { keys: ['optic','prism','light','spectrum','wavelength'], resp: "White light disperses through a prism because different wavelengths travel at different speeds in glass (refractive index). Violet (400nm) bends most, red (700nm) least. This is called dispersion." },
+    { keys: ['pendulum','period','oscillat','gravity'], resp: "Pendulum period: T = 2π√(L/g). Period depends ONLY on length and gravity — not mass or amplitude (for small angles). On Earth, g = 9.81 m/s². A 1m pendulum has T ≈ 2.01 seconds." },
+    { keys: ['hello','hi','hey','help'], resp: "Hello! I'm your AI Science Tutor. I can explain chemical reactions, lab procedures, physics concepts, and more. Try loading an experiment from the left panel, then ask me anything about it!" },
+    { keys: ['danger','safe','hazard','careful'], resp: "⚠️ Lab Safety: Always wear PPE (goggles, gloves, lab coat). Work in ventilated areas with chemicals. Never taste or smell chemicals directly. Know the location of eyewash stations and fire extinguishers." },
+  ],
+  default: [
+    "That's a great question! In science, we observe, hypothesize, experiment, and draw conclusions. Could you be more specific about which aspect of the experiment you'd like to explore?",
+    "Fascinating! Science is built on careful observation. Try double-clicking any equipment on the bench to see a reaction. Then ask me what's happening chemically!",
+    "Excellent curiosity! Remember that all chemical reactions follow the Law of Conservation of Mass — matter is neither created nor destroyed. Would you like me to explain the current experiment in more detail?",
+    "Great thinking! Try loading a different experiment from the left panel and I can walk you through the underlying science and equations involved.",
+  ]
+};
+
+let defaultIdx = 0;
+function getAiResponse(text) {
+  const lower = text.toLowerCase();
+  for (const entry of aiResponses.keywords) {
+    if (entry.keys.some(k => lower.includes(k))) return entry.resp;
+  }
+  return aiResponses.default[defaultIdx++ % aiResponses.default.length];
+}
+
+function addAiMessage(text) {
+  const container = document.getElementById('chatMessages');
+  const msg = document.createElement('div');
+  msg.className = 'chat-msg ai';
+  msg.innerHTML = `<div class="msg-label">AI TUTOR</div><div class="msg-bubble">${text}</div>`;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function addUserMessage(text) {
+  const container = document.getElementById('chatMessages');
+  const msg = document.createElement('div');
+  msg.className = 'chat-msg user';
+  msg.innerHTML = `<div class="msg-label">YOU</div><div class="msg-bubble">${text}</div>`;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  addUserMessage(text);
+  input.value = '';
+  // Typing indicator
+  setTimeout(() => {
+    addAiMessage(getAiResponse(text));
+  }, 600 + Math.random() * 400);
+}
+
+document.getElementById('chatInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+// Initial AI message
+addAiMessage("Welcome to the Virtual Science Lab! 🔬 I'm your AI Tutor. You can drag equipment from the left panel onto the bench, double-click items to trigger reactions, and ask me anything about the science!");
+
+// ── NOTIFICATIONS ──
+function showNotif(msg) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.classList.add('show');
+  clearTimeout(n._t);
+  n._t = setTimeout(() => n.classList.remove('show'), 2500);
+}
+
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toTimeString().slice(0,8);
+}
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+
+</body>
+</html>
